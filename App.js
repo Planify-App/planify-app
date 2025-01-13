@@ -4,8 +4,8 @@ import "./global.css"
 
 export default function App() {
   return (
-    <View className="bg-blue-700 flex items-center justify-center">
-      <Text className="text-2xl text-red-600">Planify</Text>
+    <View className="bg-black w-full flex items-center justify-center">
+      <Text className="text-6xl text-white">Planify</Text>
       <StatusBar style="auto" />
     </View>
   );

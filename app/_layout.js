@@ -1,12 +1,14 @@
 import {Slot} from "expo-router";
-import {View, StyleSheet} from "react-native";
+import {View, StyleSheet, ScrollView} from "react-native";
 import Constants from "expo-constants";
 
 export default function Layout() {
     return (
-        <View style={styles.pag}>
-            <Slot />
-        </View>
+        <ScrollView>
+            <View style={styles.pag}>
+                <Slot />
+            </View>
+        </ScrollView>
     );
 }
 

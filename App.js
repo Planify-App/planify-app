@@ -1,21 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import "./global.css"
+import {SafeAreaProvider} from "react-native-safe-area-context";
+import Constants from "expo-constants";
 
 export default function App() {
-  return (
-    <View className="bg-black w-full flex items-center justify-center">
-      <Text className="text-6xl text-white">Planify</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+
+    return (
+        <SafeAreaProvider>
+            <View  style={styles.login}>
+                <StatusBar style="light" />
+            </View>
+        </SafeAreaProvider>
+    );
 }
 
 const styles = StyleSheet.create({
-  // container: {
-  //   flex: 1,
-  //   backgroundColor: '#fff',
-  //   alignItems: 'center',
-  //   justifyContent: 'center',
-  // },
+    login: {
+        backgroundColor: "#DBF3EF" ,
+        paddingTop: Constants.statusBarHeight,
+        paddingBottom: Constants.statusBarHeight,
+        alignContent: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1
+    },
 });
+

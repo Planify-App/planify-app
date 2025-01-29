@@ -1,23 +1,27 @@
-import { StyleSheet, View, Text, TouchableOpacity, Button } from "react-native";
-import { Link } from "expo-router";
+import * as React from 'react';
+import { StyleSheet, View, Text, Button } from "react-native";
+import { useNavigation } from '@react-navigation/native';
+import Logo from "./Logo";
 
 export default function MenuNoLog() {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
+            <Logo size="w-60 h-60 mb-5 md:w-72 md:h-72" color="#297169" />
             <Text style={styles.text}>Bienvenido a Planify</Text>
             <Text style={styles.text}>Organiza y crea nuevas experiencias</Text>
 
-            <Link href="/Login" style={styles.enlace}>
-                <Button
-                    style={styles.button} title={"Iniciar Sesión"}>
-                </Button>
-            </Link>
 
-            <Link href="/Register" style={styles.enlace}>
+            <View className="flex gap-y-4 justify-center items-center">
                 <Button
-                    style={styles.button} title={"Registrarse"}>
-                </Button>
-            </Link>
+                    title="Iniciar Sesión"
+                    onPress={() => navigation.navigate('Login')}
+                />
+                <Button
+                    title="Registrarse"
+                    onPress={() => navigation.navigate('Register')}
+                />
+            </View>
         </View>
     );
 }
@@ -33,22 +37,5 @@ const styles = StyleSheet.create({
         fontSize: 24,
         marginBottom: 20,
         fontWeight: "bold",
-    },
-    enlace: {
-        marginTop: 20,
-    },
-    button: {
-        backgroundColor: "#0069dd",
-        padding: 15,
-        borderRadius: 8,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 20,
-    },
-    buttonText: {
-        color: "#000000",
-        fontSize: 16,
-        fontWeight: "bold",
-
-    },
+    }
 });

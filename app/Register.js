@@ -1,4 +1,4 @@
-import {Text, Alert, Button, TextInput, StyleSheet, View} from 'react-native';
+import {Text, Alert, Button, TextInput, StyleSheet, View, ScrollView} from 'react-native';
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Link } from "expo-router";
@@ -56,73 +56,78 @@ export default function Register() {
 
     return (
         <>
-            <Logo size="w-40 h-40" color="#297169" />
-            <StatusBar style="auto" />
+            <View className="mt-5 flex items-center justify-center">
+                <View className="max-w-[95%] mx-auto">
+                    <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido a Planify</Text>
+                </View>
+                <Logo size="w-40 h-40" color="#297169" />
+                <StatusBar style="auto" />
 
-            <Text className="mt-10">REGISTRO</Text>
+                <Text className="my-5 font-bold text-4xl">REGISTRO</Text>
 
-            <View>
-            <Text className="mt-2 font-bold">Correo electrónico:</Text>
+                <View>
+                <Text className="mt-2 font-bold">Correo electrónico:</Text>
 
-            <TextInput
-                className="min-w-60"
-                style={styles.input}
-                placeholder="correo@ejemplo.com"
-                value={campoCorreo}
-                onChangeText={setCorreo}
-            />
+                <TextInput
+                    className="min-w-60"
+                    style={styles.input}
+                    placeholder="correo@ejemplo.com"
+                    value={campoCorreo}
+                    onChangeText={setCorreo}
+                />
 
-            <Text className="mt-2 font-bold">Nombre:</Text>
+                <Text className="mt-2 font-bold">Nombre:</Text>
 
-            <TextInput
-                className="min-w-60 "
-                style={styles.input}
-                placeholder="Nombre"
-                value={campoNombre}
-                onChangeText={setNombre}
-            />
+                <TextInput
+                    className="min-w-60 "
+                    style={styles.input}
+                    placeholder="Nombre"
+                    value={campoNombre}
+                    onChangeText={setNombre}
+                />
 
-            <Text className="mt-2 font-bold">Apellido:</Text>
-            <TextInput
-                className="min-w-60"
-                style={styles.input}
-                placeholder="Apellido"
-                value={campoApellido}
-                onChangeText={setApellido}
-            />
+                <Text className="mt-2 font-bold">Apellido:</Text>
+                <TextInput
+                    className="min-w-60"
+                    style={styles.input}
+                    placeholder="Apellido"
+                    value={campoApellido}
+                    onChangeText={setApellido}
+                />
 
-            <Text className="mt-2 font-bold">Usuario:</Text>
-            <TextInput
-                className="min-w-60"
-                style={styles.input}
-                placeholder="Usuario"
-                value={campoUsuario}
-                onChangeText={setUsuario}
-            />
+                <Text className="mt-2 font-bold">Usuario:</Text>
+                <TextInput
+                    className="min-w-60"
+                    style={styles.input}
+                    placeholder="Usuario"
+                    value={campoUsuario}
+                    onChangeText={setUsuario}
+                />
 
-            <Text className="mt-2 font-bold">Contraseña:</Text>
-            <TextInput
-                secureTextEntry={true}
-                className="min-w-60"
-                style={styles.input}
-                placeholder="*********"
-                value={campoContra}
-                onChangeText={setContra}
-            />
+                <Text className="mt-2 font-bold">Contraseña:</Text>
+                <TextInput
+                    secureTextEntry={true}
+                    className="min-w-60"
+                    style={styles.input}
+                    placeholder="*********"
+                    value={campoContra}
+                    onChangeText={setContra}
+                />
 
-            <Text className="mt-2 font-bold">Repetir contraseña:</Text>
-            <TextInput
-                secureTextEntry={true}
-                className="min-w-60"
-                style={styles.input}
-                placeholder="*********"
-                value={campoRepContra}
-                onChangeText={setRepContra}
-            />
+                <Text className="mt-2 font-bold">Repetir contraseña:</Text>
+                <TextInput
+                    secureTextEntry={true}
+                    className="min-w-60"
+                    style={styles.input}
+                    placeholder="*********"
+                    value={campoRepContra}
+                    onChangeText={setRepContra}
+                />
+                </View>
+                <Text className="mb-10 mt-2">Ya tienes una cuenta? Inicia sesión <Link href="/Login" style={styles.enlace} className="font-bold">aquí</Link></Text>
+
+                <Button title="Enviar" onPress={subirFormulario} />
             </View>
-            <Text className="mb-10">Ya tienes una cuenta? Inicia sesión <Link href="/Login" style={styles.enlace}>aquí</Link></Text>
-
-            <Button title="Enviar" onPress={subirFormulario} />
         </>
     );
 }

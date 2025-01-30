@@ -5,6 +5,7 @@ import {useState} from "react";
 import {Link} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
+import {MaterialIcons} from "@expo/vector-icons";
 
 
 /* INICIAR LA PÁGINA: npx expo start */
@@ -12,6 +13,8 @@ import Constants from "expo-constants";
 export default function Login() {
     const [campoCorreo, correo] = useState('');
     const [campoContra, contrasena] = useState('');
+
+    const [secureText, setSecureText] = useState(true);
 
     const subirFormulario = async () => {
         // Verifica que ambos campos no estén vacíos
@@ -68,7 +71,7 @@ export default function Login() {
 
                     <View>
 
-                        <Text className="mt-2 font-bold">Nombre:</Text>
+                        <Text className="mt-2 font-bold">Correo Electrónico:</Text>
                         <TextInput
                             className="w-72 bg-white/60"
                             style={styles.input}
@@ -77,14 +80,20 @@ export default function Login() {
                             onChangeText={correo}
                         />
 
-                        <Text className="mt-2 font-bold">Nombre:</Text>
-                        <TextInput
-                            className="w-72 bg-white/60"
-                            style={styles.input}
-                            placeholder="Contraseña"
-                            value={campoContra}
-                            onChangeText={contrasena}
-                        />
+                        <Text className="mt-2 font-bold">Contraseña:</Text>
+                        <View className="flex flex-row items-center relative">
+                            <TextInput
+                                secureTextEntry={secureText}
+                                className="w-72 bg-white/60"
+                                style={styles.input}
+                                placeholder="Contraseña"
+                                value={campoContra}
+                                onChangeText={contrasena}
+                            />
+                            <TouchableOpacity onPress={() => setSecureText(!secureText)} className="absolute right-2">
+                                <MaterialIcons name={secureText ? 'visibility-off' : 'visibility'} size={24} color="rgba(0, 0, 0, 0.3)" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                     <Text className={"mb-10 mt-2"}>No tienes cuenta? Registrate <Link href="/Register" style={styles.enlace} className="font-bold">aquí</Link></Text>
                     <TouchableOpacity className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"

@@ -1,9 +1,10 @@
-import {Text, Alert, Button, TextInput, StyleSheet, View, ScrollView, TouchableOpacity} from 'react-native';
+import {Text, Alert, TextInput, StyleSheet, View, TouchableOpacity} from 'react-native';
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Link } from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Register() {
     const [campoCorreo, setCorreo] = useState('');
@@ -12,6 +13,10 @@ export default function Register() {
     const [campoUsuario, setUsuario] = useState('');
     const [campoContra, setContra] = useState('');
     const [campoRepContra, setRepContra] = useState('');
+
+    const [secureText, setSecureText] = useState(true);
+    const [secureRepText, setSecureRepText] = useState(true);
+
 
     const subirFormulario = async () => {
         try {
@@ -67,12 +72,12 @@ export default function Register() {
 
                     <Text className="my-5 font-bold text-4xl">REGISTRO</Text>
 
-                    <View>
-                        <View className="flex lg:flex-row gap-x-4">
+                    <View className="lg:w-1/3 lg:mx-auto">
+                        <View className="flex lg:flex-row gap-x-4 mx-auto">
                             <View>
                                 <Text className="mt-2 font-bold">Nombre:</Text>
                                 <TextInput
-                                    className="w-72 lg:w-32 bg-white/60"
+                                    className="w-72 lg:w-48 bg-white/60"
                                     style={styles.input}
                                     placeholder="Nombre"
                                     value={campoNombre}
@@ -80,29 +85,29 @@ export default function Register() {
                                 />
                             </View>
                             <View>
-                                <Text className="mt-2 font-bold">Apellido:</Text>
+                                <Text className="mt-2 font-bold">Apellidos:</Text>
                                 <TextInput
-                                    className="w-72 lg:w-36 bg-white/60"
+                                    className="w-72 lg:w-[18.7rem] bg-white/60"
                                     style={styles.input}
-                                    placeholder="Apellido"
+                                    placeholder="Apellidos"
                                     value={campoApellido}
                                     onChangeText={setApellido}
                                 />
                             </View>
                         </View>
 
-                        <Text className="mt-2 font-bold">Usuario:</Text>
+                        <Text className="mt-2 font-bold">Nombre de Usuario:</Text>
                         <TextInput
-                            className="w-72 bg-white/60"
+                            className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
-                            placeholder="Usuario"
+                            placeholder="Nombre de Usuario"
                             value={campoUsuario}
                             onChangeText={setUsuario}
                         />
 
                         <Text className="mt-2 font-bold">Correo electrónico:</Text>
                         <TextInput
-                            className="w-72 bg-white/60"
+                            className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
                             placeholder="correo@ejemplo.com"
                             value={campoCorreo}
@@ -110,29 +115,41 @@ export default function Register() {
                         />
 
                         <Text className="mt-2 font-bold">Contraseña:</Text>
-                        <TextInput
-                            secureTextEntry={true}
-                            className="w-72 bg-white/60"
-                            style={styles.input}
-                            placeholder="*********"
-                            value={campoContra}
-                            onChangeText={setContra}
-                        />
+                        <View className="flex flex-row items-center relative">
+                            <TextInput
+                                secureTextEntry={secureText}
+                                className="w-72 lg:w-full bg-white/60"
+                                style={styles.input}
+                                placeholder="Contraseña"
+                                value={campoContra}
+                                onChangeText={setContra}
+                            />
+                            <TouchableOpacity onPress={() => setSecureText(!secureText)} className="absolute right-2">
+                                <MaterialIcons name={secureText ? 'visibility-off' : 'visibility'} size={20} color="rgba(0, 0, 0, 0.3)" />
+                            </TouchableOpacity>
+                        </View>
 
-                        <Text className="mt-2 font-bold">Repetir contraseña:</Text>
-                        <TextInput
-                            secureTextEntry={true}
-                            className="w-72 bg-white/60"
-                            style={styles.input}
-                            placeholder="*********"
-                            value={campoRepContra}
-                            onChangeText={setRepContra}
-                        />
+                        <Text className="mt-2 font-bold">Repetir Contraseña:</Text>
+                        <View className="flex flex-row items-center relative">
+                            <TextInput
+                                secureTextEntry={secureRepText}
+                                className="w-72 lg:w-full bg-white/60"
+                                style={styles.input}
+                                placeholder="Repetir Contraseña"
+                                value={campoRepContra}
+                                onChangeText={setRepContra}
+                            />
+                            <TouchableOpacity onPress={() => setSecureRepText(!secureRepText)} className="absolute right-2">
+                                <MaterialIcons name={secureRepText ? 'visibility-off' : 'visibility'} size={20} color="rgba(0, 0, 0, 0.3)" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
+
                     <Text className="mb-10 mt-2">Ya tienes una cuenta? Inicia sesión <Link href="/Login" style={styles.enlace} className="font-bold">aquí</Link></Text>
 
-                    <TouchableOpacity className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
-                    onPress={subirFormulario}
+                    <TouchableOpacity
+                        className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                        onPress={subirFormulario}
                     >
                         <Text className="text-white font-semibold">
                             Registrarse
@@ -147,7 +164,6 @@ export default function Register() {
 const styles = StyleSheet.create({
     view: {
         paddingTop: Constants.statusBarHeight,
-
     },
     input: {
         height: 40,

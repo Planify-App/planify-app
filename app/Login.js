@@ -1,9 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, Alert, TextInput, Button, View} from 'react-native';
+import {StyleSheet, Text, Alert, TextInput, Button, View, TouchableOpacity} from 'react-native';
 import "../global.css"
 import {useState} from "react";
 import {Link} from "expo-router";
 import Logo from "./Logo";
+import Constants from "expo-constants";
 
 
 /* INICIAR LA PÁGINA: npx expo start */
@@ -56,44 +57,53 @@ export default function Login() {
 
     return (
         <>
-            <View className="max-w-[95%] mx-auto">
-                <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido de nuevo a Planify</Text>
+            <View style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
+                <View className="flex items-center justify-center">
+                    <View className="max-w-[89%] mx-auto">
+                        <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido de nuevo a Planify</Text>
+                    </View>
+                    <Logo size="w-40 h-40" color="#297169" />
+                    <StatusBar style="auto" />
+                    <Text className="my-5 font-bold text-4xl">Iniciar Sesión</Text>
+
+                    <View>
+
+                        <Text className="mt-2 font-bold">Nombre:</Text>
+                        <TextInput
+                            className="w-72 bg-white/60"
+                            style={styles.input}
+                            placeholder="Correo electrónico"
+                            value={campoCorreo}
+                            onChangeText={correo}
+                        />
+
+                        <Text className="mt-2 font-bold">Nombre:</Text>
+                        <TextInput
+                            className="w-72 bg-white/60"
+                            style={styles.input}
+                            placeholder="Contraseña"
+                            value={campoContra}
+                            onChangeText={contrasena}
+                        />
+                    </View>
+                    <Text className={"mb-10 mt-2"}>No tienes cuenta? Registrate <Link href="/Register" style={styles.enlace} className="font-bold">aquí</Link></Text>
+                    <TouchableOpacity className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                                      onPress={subirFormulario}
+                    >
+                        <Text className="text-white font-semibold">
+                            Iniciar Sesión
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-            <Logo size="w-40 h-40" color="#297169" />
-            <StatusBar style="auto" />
-            <Text className="my-5 font-bold text-4xl">Iniciar Sesión</Text>
-
-            <View>
-
-                <Text className="mt-2 font-bold">Correo electrónico:</Text>
-                <TextInput
-                        className="min-w-60"
-                        style={styles.input}
-                        placeholder="Correo electrónico"
-                        value={campoCorreo}
-                        onChangeText={correo}
-                    />
-
-                <Text className="mt-2 font-bold">Contraseña:</Text>
-                <TextInput
-                        className="min-w-60"
-                        style={styles.input}
-                        secureTextEntry={true}
-                        placeholder="Contraseña"
-                        value={campoContra}
-                        onChangeText={contrasena}
-                    />
-            </View>
-            <Text className={"mb-10 mt-2"}>No tienes cuenta? Registrate <Link href="/Register" style={styles.enlace} className="font-bold">aquí</Link></Text>
-            <Button title="Enviar" onPress={subirFormulario}>
-            </Button>
-
         </>
     );
-
 }
 
 const styles = StyleSheet.create({
+    view: {
+        paddingTop: Constants.statusBarHeight,
+    },
     input: {
         height: 40,
         borderColor: '#ccc',

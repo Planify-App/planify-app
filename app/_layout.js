@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 
 export default function Layout() {
     return (
-        <ScrollView>
+        <ScrollView className="bg-[#DBF3EF]">
             <View style={styles.pag}>
                 <Slot />
             </View>
@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     pag: {
         backgroundColor: "#FFFFFF",
         paddingVertical: Constants.statusBarHeight,
-
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1

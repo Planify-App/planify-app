@@ -21,8 +21,8 @@ export default function PerfilUsuario() {
                 className="min-w-60"
                 style={styles.input}
                 placeholder="NOMBRE USUARIO"
-                value={campoCorreo}
-                onChangeText={setCorreo}
+                value={campoUsuario}
+                onChangeText={setUsuario}
             />
 
             <Text>Correo electrónico</Text>

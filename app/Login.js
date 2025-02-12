@@ -60,11 +60,11 @@ export default function Login() {
                     <StatusBar style="auto" />
                     <Text className="my-5 font-bold text-4xl">Iniciar Sesión</Text>
 
-                    <View>
+                    <View className="lg:w-1/3 lg:mx-auto">
 
                         <Text className="mt-2 font-bold">Correo Electrónico:</Text>
                         <TextInput
-                            className="w-72 bg-white/60"
+                            className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
                             placeholder="Correo electrónico"
                             value={campoCorreo}
@@ -75,7 +75,7 @@ export default function Login() {
                         <View className="flex flex-row items-center relative">
                             <TextInput
                                 secureTextEntry={secureText}
-                                className="w-72 bg-white/60"
+                                className="w-72 lg:w-full bg-white/60"
                                 style={styles.input}
                                 placeholder="Contraseña"
                                 value={campoContra}

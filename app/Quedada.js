@@ -1,19 +1,82 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Button, TouchableOpacity} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Button, TouchableOpacity, Image } from 'react-native';
+import { useRoute } from "@react-navigation/native";
 
-export default function Quedada(){
+export default function Quedada() {
+    const route = useRoute();
+    const { id } = route.params || {};
+    const [quedada, setQuedada] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [visibleEvent, setVisibleEvent] = useState(false);
-    const [visibleTiket, setVisibleTiket] = useState(false);
+    const [visibleTicket, setVisibleTicket] = useState(false);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        async function fetchQuedada() {
+            setLoading(true);
+            setError(null);
+
+            try {
+                if (id) {
+                    const response = await fetch(`http://localhost:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    }
+                    const data = await response.json();
+                    console.log(data);
+                    setQuedada(data[0]);
+                } else {
+                    setError("Quedada ID is missing.");
+                }
+
+            } catch (error) {
+                if (signal.aborted) {
+                    console.log("Fetch aborted");
+                    return;
+                }
+                console.error('Error fetching quedada:', error);
+                setError("Failed to load quedada data. " + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchQuedada();
+
+        return () => controller.abort();
+    }, [id]);
+
+    if (loading) {
+        return <View style={styles.container}><Text>Loading...</Text></View>;
+    }
+
+    if (error) {
+        return <View style={styles.container}><Text>{error}</Text></View>;
+    }
+
+    if (!quedada) {
+        return <View style={styles.container}><Text>Quedada not found.</Text></View>;
+    }
 
     return (
         <View style={styles.container}>
-            <View style={styles.containerImagenQuedada}>
-                // Imagen de la quedada
-            </View>
+            {quedada && quedada.link_imagen && (
+                <View style={styles.containerImagenQuedada}>
+                    <Image
+                        source={{ uri: quedada.link_imagen }}
+                        className="min-w-96 w-full h-32 rounded-lg"
+                    />
+                </View>
+            )}
             <View style={styles.containerInfoQuedada}>
-                <Text style={styles.nombre}>Nombre de la quedada</Text>
+                <Text style={styles.nombre}>{quedada.nombre_quedada}</Text>
                 <View style={styles.containerDescripcio}>
-                    <Text style={styles.descripcion}>Descripcion de la quedada</Text>
+                    <Text style={styles.descripcion}>{quedada.descripcion_quedada}</Text>
                 </View>
                 <View style={styles.containerProximoEvento}>
                     <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
@@ -55,16 +118,16 @@ export default function Quedada(){
                     </View>
 
                 </View>
-                <View style={styles.containerTikets}>
-                    <TouchableOpacity onPress={() => setVisibleTiket(!visibleTiket)} style={styles.button}>
-                        <View style={styles.textTiket}>
-                            <Text style={styles.buttonText}>Tikets</Text>
-                            <Text style={styles.buttonText}>{visibleTiket ? "⬇" : "⬆"}</Text>
+                <View style={styles.containerTickets}>
+                    <TouchableOpacity onPress={() => setVisibleTicket(!visibleTicket)} style={styles.button}>
+                        <View style={styles.textTicket}>
+                            <Text style={styles.buttonText}>Tickets</Text>
+                            <Text style={styles.buttonText}>{visibleTicket ? "⬇" : "⬆"}</Text>
                         </View>
                     </TouchableOpacity>
 
-                    {visibleTiket && (
-                        <View style={styles.tikets}>
+                    {visibleTicket && (
+                        <View style={styles.tickets}>
                             <View style={styles.tabla}>
                                 {["Col 1", "Col 2", "Col 3"].map((item, index) => (
                                     <View key={index} style={styles.cell}>
@@ -119,7 +182,7 @@ const styles = StyleSheet.create({
     textProximoEvento: {
         flexDirection: "row"
     },
-    tiket: {
+    ticket: {
         flexDirection: "row"
     },
 });

@@ -46,7 +46,7 @@ export default function MenuNoLog() {
                             onPress={() => navigation.navigate('UnirseAQuedada')}
                         >
                             <Text className="text-white text-lg font-semibold">Unirse a Quedada</Text>
-                        </TouchableOpacity>4-
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

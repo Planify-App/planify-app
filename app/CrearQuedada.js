@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import {Platform, StyleSheet, Text, View, TouchableOpacity, TextInput} from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
-import {useNavigation} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import * as Calendar from 'expo-calendar';
 
 export default function CrearQuedada() {
     const navigation = useNavigation();
@@ -82,15 +83,44 @@ export default function CrearQuedada() {
 
         if (!isMultiDay) {
             setEndDate(startDate);
-            setEndTime(new Date(startDate.setHours(23, 59))); // Hora 23:59
+            setEndTime(new Date(startDate.setHours(23, 59)));
         }
     };
 
     const endTimeString = `${endTime.getHours()}:${endTime.getMinutes() < 10 ? '0' : ''}${endTime.getMinutes()}`;
 
+    const handleSave = async () => {
+        const data = {
+            correo: 'edu@eduni.dev',
+            nombre_quedada: campoNombreQuedada,
+            descripcion_quedada: campoDescripcion,
+            fecha_hora_inicio: startDate.toString() + startTime.toString(),
+            mas_de_un_dia: isMultiDay,
+            fecha_hora_final: endDate.toString() + endTime.toString(),
+            link_imagen: null,
+            mostrar_proximos_eventos: true,
+            mostrar_asistentes: true,
+            mostrar_tickets: true,
+        };
+
+        console.log(data);
+        try {
+            const response = await fetch('http://192.168.1.111:3080/api/createHangout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            Alert.alert("Éxito", "La quedada se ha guardado correctamente.");
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", "No se pudo conectar con el servidor.");
+        }
+    };
+
     return (
         <View style={styles.container}>
-
             <Text className="mt-2 font-bold">Nombre de la quedada:</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
@@ -205,7 +235,6 @@ export default function CrearQuedada() {
                                 />
                             )}
                         </>
-
                     ) : (
                         <>
                             <View style={styles.pickerContainer}>
@@ -233,10 +262,8 @@ export default function CrearQuedada() {
                                     />
                                 </View>
                             </View>
-
                         </>
                     )}
-
                 </>
             )}
 
@@ -248,17 +275,23 @@ export default function CrearQuedada() {
                 onChangeText={descripcion}
             />
 
-            <TouchableOpacity style={styles.accept_button}>
+            <TouchableOpacity style={styles.accept_button} onPress={handleSave}>
                 <Text style={styles.buttonText}>Guardar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.cancel_button} onPress={() => navigation.navigate('MenuNoLog')}>
-                    <Text style={styles.buttonText}>Cancelar</Text>
+                <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                className="bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                onPress={() => navigation.navigate('CalendarioWeb')}
+            >
+                <Text className="text-white text-lg font-semibold">Calendario Web</Text>
             </TouchableOpacity>
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,

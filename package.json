@@ -20,6 +20,7 @@
     "expo": "~52.0.23",
     "expo-calendar": "~14.0.6",
     "expo-constants": "~17.0.5",
+    "expo-crypto": "^14.0.2",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.17",
     "expo-status-bar": "~2.0.1",
@@ -42,8 +43,8 @@
     "react-native-svg": "^15.8.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "^13.13.2",
     "react-router-dom": "^7.1.5",
+    "react-native-webview": "^13.13.2",
     "react-router-native": "^6.28.2"
   },
   "devDependencies": {

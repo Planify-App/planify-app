@@ -31,7 +31,7 @@ export default function MenuNoLog() {
                         </TouchableOpacity>
                         <TouchableOpacity
                             className="bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
-                            onPress={() => navigation.navigate('InicioConQuedada')}
+                            onPress={() => navigation.navigate('InicioQuedadas')}
                         >
                             <Text className="text-white text-lg font-semibold">Ver Inicio con Quedada</Text>
                         </TouchableOpacity>

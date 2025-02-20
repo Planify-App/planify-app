@@ -1,14 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, Alert, TextInput, Button, View, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity} from 'react-native';
 import "../global.css"
 import {useState} from "react";
 import {Link} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {MaterialIcons} from "@expo/vector-icons";
-
-
-/* INICIAR LA PÁGINA: npx expo start */
 
 export default function Login() {
     const [campoCorreo, correo] = useState('');

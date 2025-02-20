@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Button, Image, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
 import * as Crypto from 'expo-crypto';
 
@@ -39,7 +39,7 @@ export default function InicioQuedadas(){
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();
-                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                        console.log(new Error(`HTTP error! status: ${response.status}, message: ${errorText}`));
                     }
                     const data = await response.json();
                     setQuedadas(data);

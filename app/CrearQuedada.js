@@ -3,7 +3,6 @@ import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
-import * as Calendar from 'expo-calendar';
 
 export default function CrearQuedada() {
     const navigation = useNavigation();
@@ -87,7 +86,6 @@ export default function CrearQuedada() {
         }
     };
 
-    const endTimeString = `${endTime.getHours()}:${endTime.getMinutes() < 10 ? '0' : ''}${endTime.getMinutes()}`;
 
     const handleSave = async () => {
         const data = {
@@ -105,7 +103,7 @@ export default function CrearQuedada() {
 
         console.log(data);
         try {
-            const response = await fetch('http://192.168.1.111:3080/api/createHangout', {
+            const response = await fetch('http://192.168.17.124:3080/api/createHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

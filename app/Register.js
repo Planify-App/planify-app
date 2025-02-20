@@ -9,7 +9,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 export default function Register() {
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
-    const [campoApellido, setApellido] = useState('');
+    const [campoApellidos, setApellidos] = useState('');
     const [campoUsuario, setUsuario] = useState('');
     const [campoContra, setContra] = useState('');
     const [campoRepContra, setRepContra] = useState('');
@@ -34,6 +34,7 @@ export default function Register() {
                 correo: campoCorreo,
                 nombre: campoNombre,
                 nombre_usuario: campoUsuario,
+                apellidos: campoApellidos,
                 contrasena: campoContra,
             };
 
@@ -89,8 +90,8 @@ export default function Register() {
                                     className="w-72 lg:w-[18.7rem] bg-white/60"
                                     style={styles.input}
                                     placeholder="Apellidos"
-                                    value={campoApellido}
-                                    onChangeText={setApellido}
+                                    value={campoApellidos}
+                                    onChangeText={setApellidos}
                                 />
                             </View>
                         </View>

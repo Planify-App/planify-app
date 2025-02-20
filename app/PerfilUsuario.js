@@ -1,85 +1,121 @@
-import { Text, Alert, Button, TextInput, StyleSheet } from 'react-native';
+import { Text, Button, TextInput, StyleSheet, View } from 'react-native';
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import Logo from "./Logo";
+import { Avatar } from "react-native-elements";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function PerfilUsuario() {
+    const [campoAvatar, setAvatar] = useState('');
+    const [campoNombreUsuario, setNombreUsuario] = useState('');
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
-    const [campoApellido, setApellido] = useState('');
-    const [campoUsuario, setUsuario] = useState('');
-    const [campoContra, setContra] = useState('');
-    const [campoRepContra, setRepContra] = useState('');
+    const [campoApellidos, setApellido] = useState('');
+    const [campoAlergenos, setAlergenos] = useState('');
+    const [modoEdicion, setModoEdicion] = useState(false);
+    const [originalValues, setOriginalValues] = useState({});
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images', 'videos', 'livePhotos'],
+            allowsEditing: true,
+            aspect: [4, 4],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setAvatar(result.assets[0].uri);
+        }
+    };
+
+    const iniciarEdicion = () => {
+        setOriginalValues({
+            campoNombreUsuario,
+            campoCorreo,
+            campoNombre,
+            campoApellidos,
+            campoAlergenos,
+            campoAvatar,
+        });
+        setModoEdicion(true);
+    };
+
+    const cancelarEdicion = () => {
+        setNombreUsuario(originalValues.campoNombreUsuario);
+        setCorreo(originalValues.campoCorreo);
+        setNombre(originalValues.campoNombre);
+        setApellido(originalValues.campoApellidos);
+        setAlergenos(originalValues.campoAlergenos);
+        setAvatar(originalValues.campoAvatar);
+        setModoEdicion(false);
+    };
 
     return (
         <>
-            <Logo size="w-40 h-40" color="#297169" />
+            <Avatar
+                size="xlarge"
+                rounded
+                source={{ uri: campoAvatar }}
+                showAccessory={modoEdicion}>
+                {modoEdicion && <Avatar.Accessory size={24} onPress={pickImage} />}
+            </Avatar>
+
             <StatusBar style="auto" />
 
-
+            <Text>Nombre Usuario</Text>
             <TextInput
-                className="min-w-60"
                 style={styles.input}
                 placeholder="NOMBRE USUARIO"
-                value={campoUsuario}
-                onChangeText={setUsuario}
+                value={campoNombreUsuario}
+                onChangeText={setNombreUsuario}
+                editable={modoEdicion}
             />
 
             <Text>Correo electrónico</Text>
             <TextInput
-                className="min-w-60"
                 style={styles.input}
                 placeholder="Correo electrónico"
                 value={campoCorreo}
                 onChangeText={setCorreo}
+                editable={modoEdicion}
             />
 
             <Text>Nombre</Text>
             <TextInput
-                className="min-w-60"
                 style={styles.input}
                 placeholder="Nombre"
                 value={campoNombre}
                 onChangeText={setNombre}
+                editable={modoEdicion}
             />
 
-            <Text>Apellido</Text>
+            <Text>Apellidos</Text>
             <TextInput
-                className="min-w-60"
                 style={styles.input}
                 placeholder="Apellido"
-                value={campoApellido}
+                value={campoApellidos}
                 onChangeText={setApellido}
-            />
-
-            <Text>Contraseña</Text>
-
-            <TextInput
-                className="min-w-60"
-                style={styles.input}
-                placeholder="Contraseña"
-                value={campoContra}
-                onChangeText={setContra}
-            />
-            <Text>Número de teléfono</Text>
-
-            <TextInput
-                className="min-w-60"
-                style={styles.input}
-                placeholder="Número de teléfono"
-                value={campoContra}
-                onChangeText={setContra}
+                editable={modoEdicion}
             />
 
             <Text>Alérgenos (Opcional)</Text>
             <TextInput
-                className="min-w-60"
                 style={styles.input}
                 placeholder="Alérgenos"
-                value={campoRepContra}
-                onChangeText={setRepContra}
+                value={campoAlergenos}
+                onChangeText={setAlergenos}
+                editable={modoEdicion}
             />
-            <Button title="Guardar" />
+
+            <View style={styles.buttonContainer}>
+                {modoEdicion ? (
+                    <>
+                        <Button title="Cancelar" onPress={cancelarEdicion} color="red" />
+                        <Button title="Guardar" onPress={() => setModoEdicion(false)} />
+                    </>
+                ) : (
+                    <Button title="Editar" onPress={iniciarEdicion} />
+                )}
+            </View>
         </>
     );
 }
@@ -89,13 +125,14 @@ const styles = StyleSheet.create({
         height: 40,
         borderColor: '#ccc',
         borderWidth: 1,
-
         borderRadius: 4,
         paddingHorizontal: 8,
         marginTop: 12,
         marginBottom: 12,
     },
-    enlace: {
-        color: "#0000FF",
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginTop: 20,
     },
 });

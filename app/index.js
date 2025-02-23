@@ -1,5 +1,10 @@
 import MenuNoLog from "./MenuNoLog";
+import InicioQuedadas from "./InicioQuedadas";
 
 export default function Index(){
-    return <MenuNoLog />
+    //if(localStorage.getItem("loggedIn")) {
+        //return <InicioQuedadas />
+    //} else {
+        return <MenuNoLog />
+    //}
 }

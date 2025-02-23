@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, Image } from 'react-native';
 import { useRoute } from "@react-navigation/native";
+import {router} from "expo-router";
 
 export default function Quedada() {
     const route = useRoute();
@@ -44,7 +45,7 @@ export default function Quedada() {
             try {
                 if (id) {
                     console.log("ID", id);
-                    const response = await fetch(`http://localhost:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
+                    const response = await fetch(`http://192.168.17.70:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
                     if (!response.ok) {
                         const errorText = await response.text();
                         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
@@ -73,6 +74,24 @@ export default function Quedada() {
 
         return () => controller.abort();
     }, [id]);
+
+    async function salirQuedada() {
+        const id_quedada = quedada?.id;
+        const correo = "ed@d.com";
+        if (id_quedada) {
+            await fetch('http://localhost:3080/api/leaveHangout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id_quedada: id_quedada,
+                    correo: correo
+                }),
+            });
+            router.push('/MenuNoLog');
+        }
+    }
 
     if (loading) {
         return <View style={styles.container}><Text>Loading...</Text></View>;
@@ -168,7 +187,7 @@ export default function Quedada() {
                     <View style={styles.containerPagos}>
 
                     </View>
-                    <Button title={"Salir de la quedada"} />
+                    <Button onPress={salirQuedada} title={"Salir de la quedada"} />
                 </View>
             </View>}
             {editarQuedada && <View style={styles.containerEditarQuedada}>

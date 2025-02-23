@@ -1,12 +1,15 @@
 import React, {useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
+import {router} from "expo-router";
 
 export default function UnirseAQuedada({ navigation }){
     const [invitationCode, setInvitationCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleJoinQuedada = async () => {
         setErrorMessage('');
+        setLoading(true);
 
         if (!invitationCode) {
             setErrorMessage("Por favor, introduce un código de invitación.");
@@ -28,19 +31,19 @@ export default function UnirseAQuedada({ navigation }){
 
             if (!response.ok) {
                 const errorData = await response.json();
+                setLoading(false);
                 throw new Error(errorData.message || "Error al unirse a la quedada");
             }
 
             const data = await response.json();
             if (data.status) {
-                Alert.alert("Éxito", data.message, [
-                    {
-                        text: "OK",
-                        onPress: () => navigation.navigate('InicioQuedadas'),
-                    },
-                ]);
+                router.push('/MenuNoLog');
             } else {
+                setLoading(false);
                 setErrorMessage(data.message);
+                setTimeout(() => {
+                    setErrorMessage('');
+                }, 3000);
             }
 
         } catch (error) {
@@ -60,9 +63,12 @@ export default function UnirseAQuedada({ navigation }){
                 value={invitationCode}
                 onChangeText={setInvitationCode}
             />
-            {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>} {/* Display error message */}
+            <View className="h-3 w-fit mx-auto">
+                {errorMessage && <Text className="text-red-500 text-center font-semibold mt-2">{errorMessage}</Text>}
+            </View>
             <TouchableOpacity
-                className="mt-10 bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px-4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                disabled={loading}
+                className="mt-10 bg-[#2C7067] border-[#2C7067] disabled:bg-gray-400 disabled:border-gray-400 border-2 py-4 lg:py-2 px-8 lg:px-4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
                 onPress={handleJoinQuedada}
             >
                 <Text className="text-white font-semibold">

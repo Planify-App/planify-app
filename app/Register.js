@@ -1,5 +1,5 @@
 import {Text, Alert, TextInput, StyleSheet, View, TouchableOpacity} from 'react-native';
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { StatusBar } from "expo-status-bar";
 import { Link } from "expo-router";
 import Logo from "./Logo";
@@ -16,7 +16,6 @@ export default function Register() {
 
     const [secureText, setSecureText] = useState(true);
     const [secureRepText, setSecureRepText] = useState(true);
-
 
     const subirFormulario = async () => {
         try {
@@ -38,7 +37,7 @@ export default function Register() {
                 contrasena: campoContra,
             };
 
-            const response = await fetch("http://localhost:3080/api/register", {
+            const response = await fetch("http://192.168.1.128:3080/api/register", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,8 +51,7 @@ export default function Register() {
                 Alert.alert('Error', `Error: ${response.status} - ${errorResponse.message}`);
             } else {
                 const jsonResponse = await response.json();
-                Alert.alert('Éxito', `Usuario registrado exitosamente: ${jsonResponse.message}`);
-                console.log(response.json())
+
             }
         } catch (error) {
             Alert.alert('Error', `Error de conexión: ${error.message}`);
@@ -73,23 +71,25 @@ export default function Register() {
                     <Text className="my-5 font-bold text-4xl">REGISTRO</Text>
 
                     <View className="lg:w-1/3 lg:mx-auto">
-                        <View className="flex lg:flex-row gap-x-4 mx-auto">
-                            <View>
+                        <View className="flex lg:flex-row gap-x-4">
+                            <View className="w-[48.25%]">
                                 <Text className="mt-2 font-bold">Nombre:</Text>
                                 <TextInput
-                                    className="w-72 lg:w-48 bg-white/60"
+                                    className="w-72 lg:w-full bg-white/60"
                                     style={styles.input}
                                     placeholder="Nombre"
+                                    autoCapitalize="words"
                                     value={campoNombre}
                                     onChangeText={setNombre}
                                 />
                             </View>
-                            <View>
+                            <View className="w-[48.25%]">
                                 <Text className="mt-2 font-bold">Apellidos:</Text>
                                 <TextInput
-                                    className="w-72 lg:w-[18.7rem] bg-white/60"
+                                    className="w-72 lg:w-full bg-white/60"
                                     style={styles.input}
                                     placeholder="Apellidos"
+                                    autoCapitalize="words"
                                     value={campoApellidos}
                                     onChangeText={setApellidos}
                                 />
@@ -101,6 +101,8 @@ export default function Register() {
                             className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
                             placeholder="Nombre de Usuario"
+                            keyboardType="default"
+                            autoCapitalize="none"
                             value={campoUsuario}
                             onChangeText={setUsuario}
                         />
@@ -110,6 +112,8 @@ export default function Register() {
                             className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
                             placeholder="correo@ejemplo.com"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
                             value={campoCorreo}
                             onChangeText={setCorreo}
                         />
@@ -121,6 +125,8 @@ export default function Register() {
                                 className="w-72 lg:w-full bg-white/60"
                                 style={styles.input}
                                 placeholder="Contraseña"
+                                keyboardType="default"
+                                autoCapitalize="none"
                                 value={campoContra}
                                 onChangeText={setContra}
                             />
@@ -135,7 +141,10 @@ export default function Register() {
                                 secureTextEntry={secureRepText}
                                 className="w-72 lg:w-full bg-white/60"
                                 style={styles.input}
-                                placeholder="Repetir Contraseña"
+                                placeholder="Confirmar Contraseña"
+                                keyboardType="default"
+                                autoCapitalize="none"
+                                autoCorrect={false}
                                 value={campoRepContra}
                                 onChangeText={setRepContra}
                             />

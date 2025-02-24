@@ -6,12 +6,20 @@ import {Link} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {MaterialIcons} from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
     const [campoCorreo, correo] = useState('');
     const [campoContra, contrasena] = useState('');
-
     const [secureText, setSecureText] = useState(true);
+
+    const storeUserSession = async (userData) => {
+        try {
+            await AsyncStorage.setItem('userSession', JSON.stringify(userData));
+        } catch (error) {
+            console.error('Error al guardar la sesión:', error);
+        }
+    };
 
     const subirFormulario = async () => {
         if (!campoCorreo || !campoContra) {
@@ -20,7 +28,7 @@ export default function Login() {
         }
 
         try {
-            const response = await fetch('http://localhost:3080/api/login', {
+            const response = await fetch('http://192.168.1.128:3080/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -32,8 +40,15 @@ export default function Login() {
             });
             const data = await response.json();
 
-            if (response) {
-                console.log("HECHODJAODJSPDJAÑLJFSKDÑAHÑASLFJA")
+            if (response.ok) {
+                const userData = {
+                    correo: data.correo,
+                    token: data.token,
+                    refreshToken: data.refreshToken,
+                    refreshTokenUpdated: data.refreshTokenUpdated,
+                };
+                await storeUserSession(userData);
+
                 Alert.alert('Éxito', data.message || 'Bienvenido a Planify');
             } else {
                 Alert.alert('Error', data.message || 'Credenciales inválidas.');
@@ -63,6 +78,8 @@ export default function Login() {
                             className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
                             placeholder="Correo electrónico"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
                             value={campoCorreo}
                             onChangeText={correo}
                         />
@@ -71,6 +88,8 @@ export default function Login() {
                         <View className="flex flex-row items-center relative">
                             <TextInput
                                 secureTextEntry={secureText}
+                                keyboardType="default"
+                                autoCapitalize="none"
                                 className="w-72 lg:w-full bg-white/60"
                                 style={styles.input}
                                 placeholder="Contraseña"

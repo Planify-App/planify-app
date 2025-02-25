@@ -1,11 +1,29 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
 import {router} from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function UnirseAQuedada({ navigation }){
     const [invitationCode, setInvitationCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const getUserSession = async () => {
+            try {
+                const session = await AsyncStorage.getItem("userSession");
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+            }
+        };
+
+        getUserSession();
+    }, []);
 
     const handleJoinQuedada = async () => {
         setErrorMessage('');
@@ -17,14 +35,13 @@ export default function UnirseAQuedada({ navigation }){
         }
 
         try {
-            const correo = 'correo_del_usuario@example.com';
-            const response = await fetch('http://localhost:3080/api/joinHangout', {
+            const response = await fetch('http://192.168.1.229:3080/api/joinHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    correo: "ed@d.com",
+                    userId: userId,
                     code: invitationCode,
                 }),
             });

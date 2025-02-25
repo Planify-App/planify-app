@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity} from 'react-native';
 import "../global.css"
 import {useState} from "react";
-import {Link} from "expo-router";
+import {Link, router} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {MaterialIcons} from "@expo/vector-icons";
@@ -28,7 +28,7 @@ export default function Login() {
         }
 
         try {
-            const response = await fetch('http://192.168.1.128:3080/api/login', {
+            const response = await fetch('http://192.168.1.229:3080/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -46,10 +46,11 @@ export default function Login() {
                     token: data.token,
                     refreshToken: data.refreshToken,
                     refreshTokenUpdated: data.refreshTokenUpdated,
+                    userId: data.userId,
                 };
                 await storeUserSession(userData);
 
-                Alert.alert('Éxito', data.message || 'Bienvenido a Planify');
+                router.push('/InicioQuedadas');
             } else {
                 Alert.alert('Error', data.message || 'Credenciales inválidas.');
             }

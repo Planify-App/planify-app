@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
 import * as Crypto from 'expo-crypto';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function InicioQuedadas(){
     const navigation = useNavigation();
@@ -11,22 +12,22 @@ export default function InicioQuedadas(){
     const [userId, setUserId] = useState(null);
 
     useEffect(() => {
-        async function generateUserId() {
+        const getUserSession = async () => {
             try {
-                const hashed = await Crypto.digestStringAsync(
-                    Crypto.CryptoDigestAlgorithm.SHA256,
-                    'ed@d.com'
-                );
-                setUserId(hashed);
+                const session = await AsyncStorage.getItem("userSession");
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                }
             } catch (error) {
-                console.error("Error hashing email:", error);
-                setError("Error generating user ID.");
-                setLoading(false);
+                console.error("Error al obtener la sesión:", error);
             }
-        }
+        };
 
-        generateUserId();
+        getUserSession();
     }, []);
+
+    //AsyncStorage.clear().then(r => console.log(r));
 
     useEffect(() => {
         async function fetchQuedadas() {
@@ -35,7 +36,7 @@ export default function InicioQuedadas(){
                 setError(null);
 
                 try {
-                    const response = await fetch(`http://localhost:3080/api/getHangoutsUser/${userId}`);
+                    const response = await fetch(`http://192.168.1.229:3080/api/getHangoutsUser/${userId}`);
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();

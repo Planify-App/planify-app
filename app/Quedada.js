@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, TouchableOpacity, Image } from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Quedada() {
     const route = useRoute();
@@ -13,12 +14,28 @@ export default function Quedada() {
     const [visibleEvent, setVisibleEvent] = useState(false);
     const [visibleTicket, setVisibleTicket] = useState(false);
     const [editarQuedada, setEditarQuedada] = useState(false);
-    const [idUsuario, setIdUsuario] = useState("03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4");
     const [usuarioRol, setUsuarioRol] = useState(null);
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        const getUserSession = async () => {
+            try {
+                const session = await AsyncStorage.getItem("userSession");
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+            }
+        };
+
+        getUserSession();
+    }, []);
 
     const getUsuarios = async (id) => {
         try {
-            const response = await fetch(`http://localhost:3080/api/getUsersFromHangout/${id}`, {
+            const response = await fetch(`http://192.168.1.229:3080/api/getUsersFromHangout/${id}`, {
                 method: "GET",
             });
 
@@ -27,7 +44,7 @@ export default function Quedada() {
             }
             const dataUsuarios = await response.json();
 
-            const usuario = dataUsuarios.find(usuario => usuario.usuario.correo === "correo@correo.com");
+            //const usuario = dataUsuarios.find(usuario => usuario.usuario.correo === "correo@correo.com");
             console.log(dataUsuarios);
         }catch(err){
             setError(err.message);
@@ -45,7 +62,7 @@ export default function Quedada() {
             try {
                 if (id) {
                     console.log("ID", id);
-                    const response = await fetch(`http://192.168.17.70:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
+                    const response = await fetch(`http://192.168.1.229:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
                     if (!response.ok) {
                         const errorText = await response.text();
                         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
@@ -77,16 +94,15 @@ export default function Quedada() {
 
     async function salirQuedada() {
         const id_quedada = quedada?.id;
-        const correo = "ed@d.com";
         if (id_quedada) {
-            await fetch('http://localhost:3080/api/leaveHangout', {
+            await fetch('http://192.168.1.229:3080/api/leaveHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     id_quedada: id_quedada,
-                    correo: correo
+                    userId: userId
                 }),
             });
             router.push('/MenuNoLog');

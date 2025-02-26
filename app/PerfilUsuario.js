@@ -7,7 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {router} from "expo-router";
 
 export default function PerfilUsuario() {
-    const [campoAvatar, setAvatar] = useState('');
+    const [campoAvatar, setAvatar] = useState('https://static.vecteezy.com/system/resources/thumbnails/002/318/271/small_2x/user-profile-icon-free-vector.jpg');
     const [campoNombreUsuario, setNombreUsuario] = useState('');
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
@@ -54,7 +54,7 @@ export default function PerfilUsuario() {
         const fetchUserInfo = async () => {
             if (userId) {
                 try {
-                    const response = await fetch(`http://192.168.1.229:3080/api/getUserInfo/${userId}`);
+                    const response = await fetch(`http://192.168.18.193:3080/api/getUserInfo/${userId}`);
                     const data = await response.json();
                     setAvatar(data.avatar);
                     setNombreUsuario(data.nombre_usuario);
@@ -136,7 +136,7 @@ export default function PerfilUsuario() {
         }
 
         try {
-            const response = await fetch('http://192.168.1.229:3080/api/editUserInfo', {
+            const response = await fetch('http://192.168.18.193:3080/api/editUserInfo', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -179,11 +179,11 @@ export default function PerfilUsuario() {
             <Text>Correo electrónico</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                style={[styles.input, styles.inputDisabled]}
                 placeholder="Correo electrónico"
                 value={campoCorreo}
                 onChangeText={setCorreo}
-                editable={modoEdicion}
+                editable={false}
             />
 
             <Text>Nombre</Text>

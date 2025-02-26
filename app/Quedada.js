@@ -35,7 +35,7 @@ export default function Quedada() {
 
     const getUsuarios = async (id) => {
         try {
-            const response = await fetch(`http://192.168.1.229:3080/api/getUsersFromHangout/${id}`, {
+            const response = await fetch(`http://192.168.18.193:3080/api/getUsersFromHangout/${id}`, {
                 method: "GET",
             });
 
@@ -52,6 +52,8 @@ export default function Quedada() {
     };
 
     useEffect(() => {
+        if (!userId || !id) return;
+
         const controller = new AbortController();
         const signal = controller.signal;
 
@@ -61,8 +63,12 @@ export default function Quedada() {
 
             try {
                 if (id) {
-                    console.log("ID", id);
-                    const response = await fetch(`http://192.168.1.229:3080/api/getHangoutById/${id}`, { signal }); // Pass signal
+                    const response = await fetch(`http://192.168.18.193:3080/api/getHangoutById`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, hangoutId: id }),
+                    });
+
                     if (!response.ok) {
                         const errorText = await response.text();
                         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
@@ -90,12 +96,12 @@ export default function Quedada() {
         fetchQuedada();
 
         return () => controller.abort();
-    }, [id]);
+    }, [userId, id]);
 
     async function salirQuedada() {
         const id_quedada = quedada?.id;
         if (id_quedada) {
-            await fetch('http://192.168.1.229:3080/api/leaveHangout', {
+            await fetch('http://192.168.18.193:3080/api/leaveHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

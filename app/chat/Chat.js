@@ -1,8 +1,9 @@
-import {Animated, Keyboard, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Animated, Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Logo from "../Logo";
 import React, { useEffect, useRef, useState } from "react";
 import Constants from "expo-constants";
 import Svg, {Path} from "react-native-svg";
+import {StatusBar} from "expo-status-bar";
 
 export default function Chat() {
     const scrollViewRef = useRef(null);
@@ -53,12 +54,12 @@ export default function Chat() {
     };
 
     return (
-        <View className="bg-[#DBF3EF] w-full min-h-full h-screen relative">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full h-screen relative">
+            <StatusBar style="auto" />
             <View
-                style={{ paddingTop: Constants.statusBarHeight }}
                 className="flex w-full bg-[#297169]/30 backdrop-blur py-4 px-8"
             >
-                <View className="flex mt-4 flex-row items-center gap-x-5">
+                <View className="flex flex-row items-center gap-x-5">
                     <Logo
                         size="w-12 h-12 p-2 bg-white rounded-full md:w-24 md:h-24"
                         color="#297169"
@@ -75,7 +76,7 @@ export default function Chat() {
                     scrollViewRef.current?.scrollToEnd({ animated: true })
                 }
             >
-                {Array(50)
+                {Array(70)
                     .fill(0)
                     .map((_, i) => (
                         <View
@@ -84,7 +85,12 @@ export default function Chat() {
                                 i % 2 === 0 ? "bg-gray-700 self-start rounded-bl-none" : "bg-blue-500 self-end rounded-br-none"
                             }`}
                         >
-                            <Text className="text-white pr-4">Mensaje {i + 1}</Text>
+                            <Text
+                                className={`text-yellow-300 self-start ${
+                                    i % 2 === 0 ? "" : "hidden"}`}>
+                                Nombre Usuario
+                            </Text>
+                            <Text className="text-white pr-4">Marcos Escoria, Basura, Mierda, Porquería {i + 1}</Text>
                             <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
                         </View>
                     ))}

@@ -37,7 +37,7 @@ export default function Register() {
                 contrasena: campoContra,
             };
 
-            const response = await fetch("http://192.168.1.128:3080/api/register", {
+            const response = await fetch("http://192.168.18.193:3080/api/register", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

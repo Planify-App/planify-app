@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
-import * as Crypto from 'expo-crypto';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
+import {StatusBar} from "expo-status-bar";
 
 export default function InicioQuedadas(){
     const navigation = useNavigation();
@@ -36,7 +37,7 @@ export default function InicioQuedadas(){
                 setError(null);
 
                 try {
-                    const response = await fetch(`http://192.168.1.229:3080/api/getHangoutsUser/${userId}`);
+                    const response = await fetch(`http://192.168.18.193:3080/api/getHangoutsUser/${userId}`);
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();
@@ -64,14 +65,61 @@ export default function InicioQuedadas(){
     }
 
     if (loading) {
-        return <View style={styles.container}><Text>Loading quedadas...</Text></View>;
+        return (
+            <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen">
+                <StatusBar style="auto" />
+                <View className="flex gap-y-4 mb-6">
+                    <TouchableOpacity
+                        className="bg-[#2C7067] mt-4 border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px-4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                        onPress={() => navigation.navigate('CrearQuedada')}
+                    >
+                        <Text className="text-white font-semibold">
+                            Crear Quedada
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                        onPress={() => navigation.navigate('UnirseAQuedada')}
+                    >
+                        <Text className="text-white font-semibold">
+                            Unirse a Quedada
+                        </Text>
+                    </TouchableOpacity>
+                    <Text className="text-center text-2xl font-semibold">Cargando quedadas...</Text>
+                </View>
+            </View>
+        )
     }
 
     if (error) {
-        return <View style={styles.container}><Text>{error}</Text></View>;
+        return (
+            <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen">
+                <StatusBar style="auto" />
+                <View className="flex gap-y-4 mb-6">
+                    <TouchableOpacity
+                        className="bg-[#2C7067] mt-4 border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px-4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                        onPress={() => navigation.navigate('CrearQuedada')}
+                    >
+                        <Text className="text-white font-semibold">
+                            Crear Quedada
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className="bg-[#2C7067] border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
+                        onPress={() => navigation.navigate('UnirseAQuedada')}
+                    >
+                        <Text className="text-white font-semibold">
+                            Unirse a Quedada
+                        </Text>
+                    </TouchableOpacity>
+                    <Text className="text-center text-2xl font-semibold">Error al cargar quedadas...</Text>
+                </View>
+            </View>
+        )
     }
     return (
-        <View className="flex lg:justify-center items-center min-h-screen">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen">
+            <StatusBar style="auto" />
             <View className="flex gap-y-4 mb-6">
                 <TouchableOpacity
                     className="bg-[#2C7067] mt-4 border-[#2C7067] border-2 py-4 lg:py-2 px-8 lg:px-4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"

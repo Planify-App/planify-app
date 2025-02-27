@@ -3,6 +3,8 @@ import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } 
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
+import {StatusBar} from "expo-status-bar";
+import Constants from "expo-constants";
 
 export default function CrearQuedada() {
     const navigation = useNavigation();
@@ -103,7 +105,7 @@ export default function CrearQuedada() {
 
         console.log(data);
         try {
-            const response = await fetch('http://192.168.17.124:3080/api/createHangout', {
+            const response = await fetch('http://192.168.18.193:3080/api/createHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -118,7 +120,7 @@ export default function CrearQuedada() {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={{paddingTop: Constants.statusBarHeight}}>
             <Text className="mt-2 font-bold">Nombre de la quedada:</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
@@ -126,6 +128,7 @@ export default function CrearQuedada() {
                 value={campoNombreQuedada}
                 onChangeText={nombreQuedada}
             />
+            <StatusBar style="auto" />
 
             <Text style={styles.text}>¿Más de un día?</Text>
             <TouchableOpacity style={styles.checkboxContainer} onPress={handleBoxPress}>

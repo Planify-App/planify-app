@@ -5,9 +5,10 @@ import { Avatar } from "react-native-elements";
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {router} from "expo-router";
+import Constants from "expo-constants";
 
 export default function PerfilUsuario() {
-    const [campoAvatar, setAvatar] = useState('https://static.vecteezy.com/system/resources/thumbnails/002/318/271/small_2x/user-profile-icon-free-vector.jpg');
+    const [campoAvatar, setAvatar] = useState(require('../assets/profile-photo.jpg'));
     const [campoNombreUsuario, setNombreUsuario] = useState('');
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
@@ -17,6 +18,7 @@ export default function PerfilUsuario() {
     const [originalValues, setOriginalValues] = useState({});
     const [userId, setUserId] = useState(null);
     const [hayCambios, setHayCambios] = useState(false);
+    const [uploadedUrl, setUploadedUrl] = useState("")
 
     useEffect(() => {
         const getUserSession = async () => {
@@ -56,7 +58,17 @@ export default function PerfilUsuario() {
                 try {
                     const response = await fetch(`http://192.168.18.193:3080/api/getUserInfo/${userId}`);
                     const data = await response.json();
-                    setAvatar(data.avatar);
+                    setOriginalValues({
+                        campoAvatar: data.avatar,
+                        campoNombreUsuario: data.nombre_usuario,
+                        campoCorreo: data.correo,
+                        campoNombre: data.nombre,
+                        campoApellidos: data.apellidos,
+                        campoAlergenos: data.alergenos,
+                    });
+                    if (data.avatar !== "") {
+                        setAvatar(data.avatar);
+                    }
                     setNombreUsuario(data.nombre_usuario);
                     setCorreo(data.correo);
                     setNombre(data.nombre);
@@ -75,26 +87,58 @@ export default function PerfilUsuario() {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images', 'videos', 'livePhotos'],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 4],
             quality: 1,
         });
 
         if (!result.canceled) {
-            setAvatar(result.assets[0].uri);
+            const newUrl = await uploadImage(result.assets[0].uri);
+            if (newUrl) {
+                setUploadedUrl(newUrl);
+                setAvatar(newUrl);
+            }
         }
     };
 
-    const iniciarEdicion = () => {
-        setOriginalValues({
-            campoNombreUsuario,
-            campoCorreo,
-            campoNombre,
-            campoApellidos,
-            campoAlergenos,
-            campoAvatar,
+
+
+    const uploadImage = async (imageUri) => {
+        let formData = new FormData();
+        formData.append('image', {
+            uri: imageUri,
+            name: 'foto.jpg',
+            type: 'image/jpeg',
         });
+
+        formData.append('userId', userId);
+
+        try {
+            let response = await fetch('http://192.168.18.193:3080/api/upload', { // Endpoint de tu backend
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            let json = await response.json();
+            if (json.url) {
+                console.log('Imagen subida correctamente:', json.url);
+                return json.url;
+            } else {
+                console.error('Error en la respuesta del backend:', json);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error al subir imagen:', error);
+            return null;
+        }
+    };
+
+
+    const iniciarEdicion = () => {
         setModoEdicion(true);
     };
 
@@ -109,6 +153,10 @@ export default function PerfilUsuario() {
     };
 
     const guardarUsuario = async () => {
+        if (!userId) {
+            Alert.alert("Error", "No se encontró el ID de usuario");
+            return;
+        }
         const data = {};
 
         if (campoNombreUsuario !== originalValues.campoNombreUsuario) {
@@ -126,14 +174,18 @@ export default function PerfilUsuario() {
         if (campoAlergenos !== originalValues.campoAlergenos) {
             data.alergenos = campoAlergenos;
         }
-        if (campoAvatar !== originalValues.campoAvatar) {
-            data.avatar = campoAvatar;
+        if (uploadedUrl && uploadedUrl !== originalValues.campoAvatar) {
+            data.avatar = uploadedUrl;
         }
+
 
         if (Object.keys(data).length === 0) {
-
             return;
         }
+
+        data.userId = userId;
+
+        console.log("Enviando datos:", JSON.stringify(data, null, 2));
 
         try {
             const response = await fetch('http://192.168.18.193:3080/api/editUserInfo', {
@@ -156,75 +208,76 @@ export default function PerfilUsuario() {
 
     return (
         <>
-            <Avatar
-                size="xlarge"
-                rounded
-                source={{ uri: campoAvatar }}
-                showAccessory={modoEdicion}>
-                {modoEdicion && <Avatar.Accessory size={24} onPress={pickImage} />}
-            </Avatar>
+            <View style={{paddingTop: Constants.statusBarHeight}} className="w-full flex justify-center items-center bg-[#DBF3EF]">
+                <Avatar
+                    size="xlarge"
+                    rounded
+                    source={typeof campoAvatar === 'string' ? { uri: campoAvatar } : campoAvatar}
+                    showAccessory={modoEdicion}>
+                    {modoEdicion && <Avatar.Accessory size={24} onPress={pickImage} />}
+                </Avatar>
+                <StatusBar style="auto" />
 
-            <StatusBar style="auto" />
+                <Text>Nombre Usuario</Text>
+                <TextInput
+                    className="w-72 lg:w-full bg-white/60"
+                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                    placeholder="NOMBRE USUARIO"
+                    value={campoNombreUsuario}
+                    onChangeText={setNombreUsuario}
+                    editable={modoEdicion}
+                />
 
-            <Text>Nombre Usuario</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                placeholder="NOMBRE USUARIO"
-                value={campoNombreUsuario}
-                onChangeText={setNombreUsuario}
-                editable={modoEdicion}
-            />
+                <Text>Correo electrónico</Text>
+                <TextInput
+                    className="w-72 lg:w-full bg-white/60"
+                    style={[styles.input, styles.inputDisabled]}
+                    placeholder="Correo electrónico"
+                    value={campoCorreo}
+                    onChangeText={setCorreo}
+                    editable={false}
+                />
 
-            <Text>Correo electrónico</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, styles.inputDisabled]}
-                placeholder="Correo electrónico"
-                value={campoCorreo}
-                onChangeText={setCorreo}
-                editable={false}
-            />
+                <Text>Nombre</Text>
+                <TextInput
+                    className="w-72 lg:w-full bg-white/60"
+                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                    placeholder="Nombre"
+                    value={campoNombre}
+                    onChangeText={setNombre}
+                    editable={modoEdicion}
+                />
 
-            <Text>Nombre</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                placeholder="Nombre"
-                value={campoNombre}
-                onChangeText={setNombre}
-                editable={modoEdicion}
-            />
+                <Text>Apellidos</Text>
+                <TextInput
+                    className="w-72 lg:w-full bg-white/60"
+                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                    placeholder="Apellido"
+                    value={campoApellidos}
+                    onChangeText={setApellido}
+                    editable={modoEdicion}
+                />
 
-            <Text>Apellidos</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                placeholder="Apellido"
-                value={campoApellidos}
-                onChangeText={setApellido}
-                editable={modoEdicion}
-            />
+                <Text>Alérgenos (Opcional)</Text>
+                <TextInput
+                    className="w-72 lg:w-full bg-white/60"
+                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                    placeholder="Alérgenos"
+                    value={campoAlergenos}
+                    onChangeText={setAlergenos}
+                    editable={modoEdicion}
+                />
 
-            <Text>Alérgenos (Opcional)</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                placeholder="Alérgenos"
-                value={campoAlergenos}
-                onChangeText={setAlergenos}
-                editable={modoEdicion}
-            />
-
-            <View style={styles.buttonContainer}>
-                {modoEdicion ? (
-                    <>
-                        <Button title="Cancelar" onPress={cancelarEdicion} color="red" />
-                        <Button title="Guardar" disabled={!hayCambios} onPress={() => setModoEdicion(false) && guardarUsuario()} />
-                    </>
-                ) : (
-                    <Button title="Editar" onPress={iniciarEdicion} />
-                )}
+                <View style={styles.buttonContainer}>
+                    {modoEdicion ? (
+                        <>
+                            <Button title="Cancelar" onPress={cancelarEdicion} color="red" />
+                            <Button title="Guardar" disabled={!hayCambios} onPress={() => { guardarUsuario(); setModoEdicion(false); }} />
+                        </>
+                    ) : (
+                        <Button title="Editar" onPress={iniciarEdicion} />
+                    )}
+                </View>
             </View>
         </>
     );

@@ -20,7 +20,6 @@ export default function Layout() {
 const styles = StyleSheet.create({
     pag: {
         backgroundColor: "#FFFFFF",
-        paddingVertical: Constants.statusBarHeight,
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1

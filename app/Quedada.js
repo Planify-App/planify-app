@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, Button, TouchableOpacity, Image } from 'react-n
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {StatusBar} from "expo-status-bar";
 
 export default function Quedada() {
     const route = useRoute();
     const { id } = route.params || {};
     const [quedada, setQuedada] = useState(null);
+    const [tickets, setTickets] = useState(null);
+    const [users, setUsers] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -33,23 +36,49 @@ export default function Quedada() {
         getUserSession();
     }, []);
 
-    const getUsuarios = async (id) => {
-        try {
-            const response = await fetch(`http://192.168.18.193:3080/api/getUsersFromHangout/${id}`, {
-                method: "GET",
-            });
+    useEffect(() => {
+        const fetchUsuarios = async () => {
+            try {
+                const response = await fetch(`http://192.168.18.193:3080/api/getUsersFromHangout/${id}`, {
+                    method: "GET",
+                });
 
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                setUsers(data);
+            } catch (err) {
+                setError(err.message);
             }
-            const dataUsuarios = await response.json();
+        };
 
-            //const usuario = dataUsuarios.find(usuario => usuario.usuario.correo === "correo@correo.com");
-            console.log(dataUsuarios);
-        }catch(err){
-            setError(err.message);
+        if (id) {
+            fetchUsuarios();
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        const fetchTickets = async () => {
+            try {
+                const response = await fetch(`http://192.168.18.193:3080/api/getTicketsFromHangout/${id}`, {
+                    method: "GET",
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                setTickets(data);
+            } catch (err) {
+                setError(err.message);
+            }
+        };
+
+        if (id) {
+            fetchTickets();
+        }
+    }, [id]);
 
     useEffect(() => {
         if (!userId || !id) return;
@@ -57,29 +86,25 @@ export default function Quedada() {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        async function fetchQuedada() {
+        const fetchQuedada = async () => {
             setLoading(true);
             setError(null);
 
             try {
-                if (id) {
-                    const response = await fetch(`http://192.168.18.193:3080/api/getHangoutById`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId, hangoutId: id }),
-                    });
+                const response = await fetch(`http://192.168.18.193:3080/api/getHangoutById`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, hangoutId: id }),
+                    signal,
+                });
 
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                    }
-                    const data = await response.json();
-                    console.log(data);
-                    setQuedada(data[0]);
-                } else {
-                    setError("Quedada ID is missing.");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
-
+                const data = await response.json();
+                console.log(data);
+                setQuedada(data[0]);
             } catch (error) {
                 if (signal.aborted) {
                     console.log("Fetch aborted");
@@ -88,10 +113,9 @@ export default function Quedada() {
                 console.error('Error fetching quedada:', error);
                 setError("Failed to load quedada data. " + error.message);
             } finally {
-                await getUsuarios(id);
                 setLoading(false);
             }
-        }
+        };
 
         fetchQuedada();
 
@@ -116,48 +140,55 @@ export default function Quedada() {
     }
 
     if (loading) {
-        return <View style={styles.container}><Text>Loading...</Text></View>;
+        return (
+            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+                <StatusBar style="auto" />
+                <Text className="text-center text-2xl font-bold">Cargando Quedada...</Text>
+            </View>
+        )
     }
 
     if (error) {
-        return <View style={styles.container}><Text>{error}</Text></View>;
+        return (
+            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+                <StatusBar style="auto" />
+                <Text className="text-center text-2xl font-bold">Error al obtener la Quedada.</Text>
+            </View>
+        )
     }
-
-    if (!quedada) {
-        return <View style={styles.container}><Text>Quedada not found.</Text></View>;
-    }
-
-
 
     return (
-        <View style={styles.container}>
-            {!editarQuedada && <View style={styles.containerEditarQuedada}>
+        <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
+            <StatusBar style="auto" />
+            {!editarQuedada && <View>
                 {quedada && quedada.link_imagen && (
                     <View style={styles.containerImagenQuedada}>
                         <Image
                             source={{ uri: quedada.link_imagen }}
-                            className="min-w-96 w-full h-32 rounded-lg"
+                            className="w-full h-32 mb-5"
                         />
                     </View>
                 )}
-                <View style={styles.containerInfoQuedada}>
-                    <Text style={styles.nombre}>{quedada.nombre_quedada}</Text>
-                    <Text onPress={() => setEditarQuedada(true)}>Editar</Text>
+                <View style={styles.containerInfoQuedada} className="px-5">
+                    <View className="flex flex-row gap-x-2 items-end justify-between">
+                        <Text className="font-bold text-4xl text-gray-700">{quedada.nombre_quedada}</Text>
+                        <Text className="text-xs text-blue-400 font-semibold pb-1" onPress={() => setEditarQuedada(true)}>Editar</Text>
+                    </View>
                     <View style={styles.containerDescripcio}>
                         <Text style={styles.descripcion}>{quedada.descripcion_quedada}</Text>
                     </View>
                     <View style={styles.containerProximoEvento}>
                         <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
-                            <View style={styles.textProximoEvento}>
-                                <Text style={styles.buttonText}>{visibleEvent ? "Ocultar" : "Ver"} Proximo Evento</Text>
-                                <Text style={styles.buttonText}>{visibleEvent ? "⬇" : "⬆"}</Text>
+                            <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
+                                <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
+                                <Text style={styles.buttonText} className="text-white">{visibleEvent ? "⬆" : "⬇"}</Text>
                             </View>
                         </TouchableOpacity>
 
                         {visibleEvent && (
-                            <View style={styles.EventoCercano}>
+                            <View className="px-4 py-2 bg-blue-300 rounded-b-lg">
                                 <View style={styles.InfoEvento}>
-                                    <Text>Evento</Text>
+                                    <Text className="text-black">Evento</Text>
                                 </View>
                                 <View style={styles.MapaEvento}>
                                     <Text>Mapa</Text>
@@ -175,41 +206,55 @@ export default function Quedada() {
                             ))}
                         </View>
                     </View>
-                    <View style={styles.containerAsistentes}>
-                        <View className={"border-b-2 border-black"}>
-                            <Text>Asistentes</Text>
+                    <View className="mb-2">
+                        <Text className="text-center text-2xl font-semibold">Asistentes</Text>
+                        <View className="border-b-2 border-black flex flex-row justify-between">
+                            <Text>Nombre de Usuario</Text>
+                            <Text>Rol</Text>
                         </View>
-                        <View>
-                            <Text>Nombre - Admin</Text>
-                            <Text>Nombre - Organizador</Text>
-                            <Text>Nombre</Text>
-                        </View>
-
-                    </View>
-                    <View style={styles.containerTickets}>
-                        <TouchableOpacity onPress={() => setVisibleTicket(!visibleTicket)} style={styles.button}>
-                            <View style={styles.textTicket}>
-                                <Text style={styles.buttonText}>Tickets</Text>
-                                <Text style={styles.buttonText}>{visibleTicket ? "⬇" : "⬆"}</Text>
-                            </View>
-                        </TouchableOpacity>
-
-                        {visibleTicket && (
-                            <View style={styles.tickets}>
-                                <View style={styles.tabla}>
-                                    {["Col 1", "Col 2", "Col 3"].map((item, index) => (
-                                        <View key={index} style={styles.cell}>
-                                            <Text style={styles.text}>{item}</Text>
+                        {
+                            users && users.length > 0 && (
+                                <View>
+                                    {users.map((user) => (
+                                        <View key={user.id} className="flex flex-row justify-between items-center">
+                                            <Text>{user.usuario.nombre_usuario}</Text>
+                                            <Text>{user.rol !== null ? user.rol : ""}</Text>
                                         </View>
                                     ))}
                                 </View>
+                            )
+                        }
+                    </View>
+                    <View style={styles.containerTickets}>
+                        {tickets && tickets.length > 0 && (
+                            <TouchableOpacity
+                                onPress={() => setVisibleTicket(!visibleTicket)}
+                                style={styles.button}
+                                className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
+                            >
+                                <Text style={styles.buttonText} className="text-white">Tickets</Text>
+                                <Text style={styles.buttonText} className="text-white">
+                                    {visibleTicket ? "⬆" : "⬇"}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {visibleTicket && tickets && tickets.length > 0 && (
+                            <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
+                                {tickets.map((ticket) => (
+                                    <View key={ticket.id} className="flex flex-row justify-between items-center">
+                                        <Text className="text-white">{ticket.nombre}</Text>
+                                        <Text className="text-white">{ticket.precio}</Text>
+                                    </View>
+                                ))}
                             </View>
                         )}
                     </View>
+
                     <View style={styles.containerPagos}>
 
                     </View>
-                    <Button onPress={salirQuedada} title={"Salir de la quedada"} />
+                    <Button className="absolute bottom-0" onPress={salirQuedada} title={"Salir de la quedada"} />
                 </View>
             </View>}
             {editarQuedada && <View style={styles.containerEditarQuedada}>
@@ -220,12 +265,6 @@ export default function Quedada() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-    },
     title: {
         fontSize: 24,
         color: 'black',

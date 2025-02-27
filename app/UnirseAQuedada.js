@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {StatusBar} from "expo-status-bar";
+import Constants from "expo-constants";
 
 export default function UnirseAQuedada({ navigation }){
     const [invitationCode, setInvitationCode] = useState('');
@@ -29,13 +31,8 @@ export default function UnirseAQuedada({ navigation }){
         setErrorMessage('');
         setLoading(true);
 
-        if (!invitationCode) {
-            setErrorMessage("Por favor, introduce un código de invitación.");
-            return;
-        }
-
         try {
-            const response = await fetch('http://192.168.1.229:3080/api/joinHangout', {
+            const response = await fetch('http://192.168.18.193:3080/api/joinHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -69,7 +66,8 @@ export default function UnirseAQuedada({ navigation }){
         }
     };
     return (
-        <View style={styles.container} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full flex flex-col items-center justify-center min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
+            <StatusBar style="auto" />
             <View className="max-w-[95%] mx-auto">
                 <Text className="my-5 text-center text-balance font-bold text-4xl">Código de Invitación:</Text>
             </View>

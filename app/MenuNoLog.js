@@ -4,12 +4,14 @@ import { useNavigation } from '@react-navigation/native';
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {router} from "expo-router";
+import {StatusBar} from "expo-status-bar";
 
 export default function MenuNoLog() {
     const navigation = useNavigation();
     return (
         <>
-            <View style={styles.view} className="bg-[#DBF3EF] w-full min-h-full lg:min-h-screen">
+            <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full lg:min-h-screen">
+                <StatusBar style="auto" />
                 <View className="flex my-auto items-center justify-center">
                     <Logo size="w-60 h-60 mb-5 md:w-72 md:h-72" color="#297169" />
                     <Text style={styles.text}>Bienvenido a Planify</Text>
@@ -68,9 +70,6 @@ export default function MenuNoLog() {
 }
 
 const styles = StyleSheet.create({
-    view: {
-        paddingTop: Constants.statusBarHeight,
-    },
     container: {
         flex: 1,
         justifyContent: "center",

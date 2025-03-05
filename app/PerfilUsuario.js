@@ -1,4 +1,4 @@
-import {Text, Button, TextInput, StyleSheet, View, Alert} from 'react-native';
+import {Text, Button, TextInput, StyleSheet, View, Alert, Platform} from 'react-native';
 import {useEffect, useState} from "react";
 import { StatusBar } from "expo-status-bar";
 import { Avatar } from "react-native-elements";
@@ -20,21 +20,40 @@ export default function PerfilUsuario() {
     const [hayCambios, setHayCambios] = useState(false);
     const [uploadedUrl, setUploadedUrl] = useState("")
 
-    useEffect(() => {
-        const getUserSession = async () => {
-            try {
-                const session = await AsyncStorage.getItem("userSession");
-                if (session) {
-                    const userData = JSON.parse(session);
-                    setUserId(userData.userId);
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
                 }
-            } catch (error) {
-                console.error("Error al obtener la sesión:", error);
-            }
-        };
+            };
 
-        getUserSession();
-    }, []);
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    }
+
 
     useEffect(() => {
         const verificarCambios = () => {
@@ -56,7 +75,7 @@ export default function PerfilUsuario() {
         const fetchUserInfo = async () => {
             if (userId) {
                 try {
-                    const response = await fetch(`http://192.168.18.193:3080/api/getUserInfo/${userId}`);
+                    const response = await fetch(`http://192.168.17.198:3080/api/getUserInfo/${userId}`);
                     const data = await response.json();
                     setOriginalValues({
                         campoAvatar: data.avatar,
@@ -115,7 +134,7 @@ export default function PerfilUsuario() {
         formData.append('userId', userId);
 
         try {
-            let response = await fetch('http://192.168.18.193:3080/api/upload', { // Endpoint de tu backend
+            let response = await fetch('http://192.168.17.198:3080/api/upload', { // Endpoint de tu backend
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -188,7 +207,7 @@ export default function PerfilUsuario() {
         console.log("Enviando datos:", JSON.stringify(data, null, 2));
 
         try {
-            const response = await fetch('http://192.168.18.193:3080/api/editUserInfo', {
+            const response = await fetch('http://192.168.17.198:3080/api/editUserInfo', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

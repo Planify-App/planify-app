@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity, Platform} from 'react-native';
 import {useNavigation} from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
@@ -12,21 +12,40 @@ export default function InicioQuedadas(){
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
 
-    useEffect(() => {
-        const getUserSession = async () => {
-            try {
-                const session = await AsyncStorage.getItem("userSession");
-                if (session) {
-                    const userData = JSON.parse(session);
-                    setUserId(userData.userId);
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
                 }
-            } catch (error) {
-                console.error("Error al obtener la sesión:", error);
-            }
-        };
+            };
 
-        getUserSession();
-    }, []);
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    }
+
 
     //AsyncStorage.clear().then(r => console.log(r));
 
@@ -37,7 +56,7 @@ export default function InicioQuedadas(){
                 setError(null);
 
                 try {
-                    const response = await fetch(`http://192.168.18.193:3080/api/getHangoutsUser/${userId}`);
+                    const response = await fetch(`http://192.168.17.198:3080/api/getHangoutsUser/${userId}`);
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();

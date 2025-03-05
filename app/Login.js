@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity} from 'react-native';
+import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform} from 'react-native';
 import "../global.css"
 import {useState} from "react";
 import {Link, router} from "expo-router";
@@ -14,10 +14,18 @@ export default function Login() {
     const [secureText, setSecureText] = useState(true);
 
     const storeUserSession = async (userData) => {
-        try {
-            await AsyncStorage.setItem('userSession', JSON.stringify(userData));
-        } catch (error) {
-            console.error('Error al guardar la sesión:', error);
+        if (Platform.OS === 'android' || Platform.OS === 'ios') {
+            try {
+                await AsyncStorage.setItem('userSession', JSON.stringify(userData));
+            } catch (error) {
+                console.error('Error al guardar la sesión:', error);
+            }
+        } else if (Platform.OS === 'web') {
+            try {
+                sessionStorage.setItem('userSession', JSON.stringify(userData));
+            } catch (error) {
+                console.error('Error al guardar la sesión:', error);
+            }
         }
     };
 
@@ -28,7 +36,7 @@ export default function Login() {
         }
 
         try {
-            const response = await fetch('http://192.168.18.193:3080/api/login', {
+            const response = await fetch('http://192.168.17.198:3080/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

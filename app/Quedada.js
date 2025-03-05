@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, TouchableOpacity, Image } from 'react-native';
+import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform} from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {StatusBar} from "expo-status-bar";
+import Constants from "expo-constants";
 
 export default function Quedada() {
     const route = useRoute();
@@ -20,26 +21,45 @@ export default function Quedada() {
     const [usuarioRol, setUsuarioRol] = useState(null);
     const [userId, setUserId] = useState(null);
 
-    useEffect(() => {
-        const getUserSession = async () => {
-            try {
-                const session = await AsyncStorage.getItem("userSession");
-                if (session) {
-                    const userData = JSON.parse(session);
-                    setUserId(userData.userId);
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
                 }
-            } catch (error) {
-                console.error("Error al obtener la sesión:", error);
-            }
-        };
+            };
 
-        getUserSession();
-    }, []);
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    }
+
 
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                const response = await fetch(`http://192.168.18.193:3080/api/getUsersFromHangout/${id}`, {
+                const response = await fetch(`http://192.168.17.198:3080/api/getUsersFromHangout/${id}`, {
                     method: "GET",
                 });
 
@@ -61,7 +81,7 @@ export default function Quedada() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch(`http://192.168.18.193:3080/api/getTicketsFromHangout/${id}`, {
+                const response = await fetch(`http://192.168.17.198:3080/api/getTicketsFromHangout/${id}`, {
                     method: "GET",
                 });
 
@@ -91,7 +111,7 @@ export default function Quedada() {
             setError(null);
 
             try {
-                const response = await fetch(`http://192.168.18.193:3080/api/getHangoutById`, {
+                const response = await fetch(`http://192.168.17.198:3080/api/getHangoutById`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId, hangoutId: id }),
@@ -125,7 +145,7 @@ export default function Quedada() {
     async function salirQuedada() {
         const id_quedada = quedada?.id;
         if (id_quedada) {
-            await fetch('http://192.168.18.193:3080/api/leaveHangout', {
+            await fetch('http://192.168.17.198:3080/api/leaveHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -158,7 +178,7 @@ export default function Quedada() {
     }
 
     return (
-        <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
             <StatusBar style="auto" />
             {!editarQuedada && <View>
                 {quedada && quedada.link_imagen && (

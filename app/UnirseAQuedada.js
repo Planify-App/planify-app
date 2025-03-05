@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform} from 'react-native';
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {StatusBar} from "expo-status-bar";
@@ -11,28 +11,46 @@ export default function UnirseAQuedada({ navigation }){
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState(null);
 
-    useEffect(() => {
-        const getUserSession = async () => {
-            try {
-                const session = await AsyncStorage.getItem("userSession");
-                if (session) {
-                    const userData = JSON.parse(session);
-                    setUserId(userData.userId);
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
                 }
-            } catch (error) {
-                console.error("Error al obtener la sesión:", error);
-            }
-        };
+            };
 
-        getUserSession();
-    }, []);
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+                    if (session) {
+                        const userData = JSON.parse(session);
+                        setUserId(userData.userId);
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    }
 
     const handleJoinQuedada = async () => {
         setErrorMessage('');
         setLoading(true);
 
         try {
-            const response = await fetch('http://192.168.18.193:3080/api/joinHangout', {
+            const response = await fetch('http://192.168.17.198:3080/api/joinHangout', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

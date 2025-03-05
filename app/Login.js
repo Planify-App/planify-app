@@ -9,7 +9,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
-    const [campoCorreo, correo] = useState('');
+    const [Auth, setAuth] = useState('');
     const [campoContra, contrasena] = useState('');
     const [secureText, setSecureText] = useState(true);
 
@@ -30,7 +30,7 @@ export default function Login() {
     };
 
     const subirFormulario = async () => {
-        if (!campoCorreo || !campoContra) {
+        if (!Auth || !campoContra) {
             Alert.alert('Error', 'Por favor, completa ambos campos.');
             return;
         }
@@ -42,7 +42,7 @@ export default function Login() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    correo: campoCorreo,
+                    authUser: Auth,
                     contrasena: campoContra,
                 }),
             });
@@ -82,15 +82,15 @@ export default function Login() {
 
                     <View className="lg:w-1/3 lg:mx-auto">
 
-                        <Text className="mt-2 font-bold">Correo Electrónico:</Text>
+                        <Text className="mt-2 font-bold">Nombre de usuario o correo electrónico:</Text>
                         <TextInput
                             className="w-72 lg:w-full bg-white/60"
                             style={styles.input}
-                            placeholder="Correo electrónico"
+                            placeholder="Nombre de usuario o correo electrónico"
                             keyboardType="email-address"
                             autoCapitalize="none"
-                            value={campoCorreo}
-                            onChangeText={correo}
+                            value={Auth}
+                            onChangeText={setAuth}
                         />
 
                         <Text className="mt-2 font-bold">Contraseña:</Text>

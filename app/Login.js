@@ -50,7 +50,7 @@ export default function Login() {
 
             if (response.ok) {
                 const userData = {
-                    correo: data.correo,
+                    nombre_usuario: data.nombre_usuario,
                     token: data.token,
                     refreshToken: data.refreshToken,
                     refreshTokenUpdated: data.refreshTokenUpdated,

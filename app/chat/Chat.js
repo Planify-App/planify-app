@@ -68,33 +68,36 @@ export default function Chat() {
                 </View>
             </View>
 
-            <ScrollView
-                ref={scrollViewRef}
-                className="px-3 flex flex-col gap-y-5"
-                contentContainerStyle={{ paddingBottom: textInputHeight }}
-                onContentSizeChange={() =>
-                    scrollViewRef.current?.scrollToEnd({ animated: true })
-                }
-            >
-                {Array(70)
-                    .fill(0)
-                    .map((_, i) => (
-                        <View
-                            key={i}
-                            className={`pl-6 pr-2 pt-3 pb-1 rounded-lg max-w-[70%] mt-4 ${
-                                i % 2 === 0 ? "bg-gray-700 self-start rounded-bl-none" : "bg-blue-500 self-end rounded-br-none"
-                            }`}
-                        >
-                            <Text
-                                className={`text-yellow-300 self-start ${
-                                    i % 2 === 0 ? "" : "hidden"}`}>
-                                Nombre Usuario
-                            </Text>
-                            <Text className="text-white pr-4">Marcos Escoria, Basura, Mierda, Porquería {i + 1}</Text>
-                            <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
-                        </View>
-                    ))}
-            </ScrollView>
+            <View style={{ flex: 1, marginBottom: textInputHeight }}>
+                <ScrollView
+                    ref={scrollViewRef}
+                    className="px-3 flex flex-col gap-y-5"
+                    contentContainerStyle={{ paddingBottom: 10 }}
+                    onContentSizeChange={() =>
+                        scrollViewRef.current?.scrollToEnd({ animated: true })
+                    }
+                >
+                    {Array(70)
+                        .fill(0)
+                        .map((_, i) => (
+                            <View
+                                key={i}
+                                className={`pl-6 pr-2 pt-3 pb-1 rounded-lg max-w-[70%] mt-4 ${
+                                    i % 2 === 0 ? "bg-gray-700 self-start rounded-bl-none" : "bg-blue-500 self-end rounded-br-none"
+                                }`}
+                            >
+                                <Text
+                                    className={`text-yellow-300 self-start ${
+                                        i % 2 === 0 ? "" : "hidden"}`}>
+                                    Nombre Usuario
+                                </Text>
+                                <Text className="text-white pr-4">Marcos Escoria, Basura, Mierda, Porquería {i + 1}</Text>
+                                <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
+                            </View>
+                        ))
+                    }
+                </ScrollView>
+            </View>
 
             <View
                 style={{ bottom: keyboardHeight }}

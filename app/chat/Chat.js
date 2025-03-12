@@ -62,7 +62,7 @@ export default function Chat() {
     }
 
     useEffect(() => {
-        const newSocket = io("http://localhost:3090", {
+        const newSocket = io("http://192.168.19.191:3090", {
             query: { userId },
             autoConnect: true,
             reconnection: true,
@@ -150,6 +150,11 @@ export default function Chat() {
         setText("");
     };
 
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
     return (
         <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full h-screen relative">
             <StatusBar style="auto" />
@@ -183,10 +188,10 @@ export default function Chat() {
                             }`}
                         >
                             { msg.idUser !== userId &&
-                                <Text className="text-yellow-300 self-start">{msg.usuario}</Text>
+                                <Text className="text-yellow-300 -ml-3 font-semibold mb-1 self-start">{msg.usuario}</Text>
                             }
                             <Text className="text-white pr-4">{msg.mensaje}</Text>
-                            <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
+                            <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32 leading-[0] mb-2">{formatTime(msg.tiempo)}</Text>
                         </View>
                     ))}
                 </ScrollView>

@@ -7,6 +7,7 @@ import Constants from "expo-constants";
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Register() {
+    const ip = "192.168.1.111"
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
     const [campoApellidos, setApellidos] = useState('');
@@ -18,7 +19,6 @@ export default function Register() {
     const [secureRepText, setSecureRepText] = useState(true);
 
     const subirFormulario = async () => {
-        try {
             if (!campoCorreo || !campoNombre || !campoContra || !campoRepContra) {
                 Alert.alert('Error', 'Por favor, completa todos los campos.');
                 return;
@@ -37,7 +37,7 @@ export default function Register() {
                 contrasena: campoContra,
             };
 
-            const response = await fetch("http://192.168.18.193:3080/api/register", {
+            const response = await fetch(`http://${ip}:3080/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -53,9 +53,6 @@ export default function Register() {
                 const jsonResponse = await response.json();
 
             }
-        } catch (error) {
-            Alert.alert('Error', `Error de conexión: ${error.message}`);
-        }
     };
 
     return (

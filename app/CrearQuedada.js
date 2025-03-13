@@ -7,6 +7,7 @@ import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 
 export default function CrearQuedada() {
+    const ip = "192.168.1.111";
     const navigation = useNavigation();
 
     const [startDate, setStartDate] = useState(new Date());
@@ -105,7 +106,7 @@ export default function CrearQuedada() {
 
         console.log(data);
         try {
-            const response = await fetch('http://192.168.18.193:3080/api/createHangout', {
+            const response = await fetch(`http://${ip}:3080/api/createHangout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

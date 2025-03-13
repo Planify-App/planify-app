@@ -9,6 +9,7 @@ import {StatusBar} from "expo-status-bar";
 
 
 export default function Chat() {
+    const ip = "192.168.1.111"
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false)
     const [messages, setMessages] = useState([]);
@@ -62,7 +63,7 @@ export default function Chat() {
     }
 
     useEffect(() => {
-        const newSocket = io("http://192.168.19.191:3090", {
+        const newSocket = io(`http://${ip}:3090`, {
             query: { userId },
             autoConnect: true,
             reconnection: true,

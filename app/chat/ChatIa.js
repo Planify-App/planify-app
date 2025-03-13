@@ -20,6 +20,8 @@ import {MultipleSelectList, SelectList} from "react-native-dropdown-select-list"
 
 
 export default function Chat() {
+    const ip = "192.168.1.111" +
+        ""
     const scrollViewRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [textInputHeight, setTextInputHeight] = useState(85);
@@ -178,7 +180,7 @@ export default function Chat() {
                                 cantidad: 5,
                                 busquedaDe: Categories().selected.map(item => item.value).join(", "),
                             }
-                            const result = await fetch(`http://localhost:3080/api/iaRequest`, {
+                            const result = await fetch(`http://${ip}:3080/api/iaRequest`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',

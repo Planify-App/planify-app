@@ -7,6 +7,7 @@ import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 
 export default function Quedada() {
+    const ip = "192.168.1.111"
     const route = useRoute();
     const { id } = route.params || {};
     const [quedada, setQuedada] = useState(null);
@@ -59,7 +60,7 @@ export default function Quedada() {
     useEffect(() => {
         const fetchUsuarios = async () => {
             try {
-                const response = await fetch(`http://192.168.17.198:3080/api/getUsersFromHangout/${id}`, {
+                const response = await fetch(`http://${ip}:3080/api/getUsersFromHangout/${id}`, {
                     method: "GET",
                 });
 
@@ -81,7 +82,7 @@ export default function Quedada() {
     useEffect(() => {
         const fetchTickets = async () => {
             try {
-                const response = await fetch(`http://192.168.17.198:3080/api/getTicketsFromHangout/${id}`, {
+                const response = await fetch(`http://${ip}:3080/api/getTicketsFromHangout/${id}`, {
                     method: "GET",
                 });
 
@@ -111,7 +112,7 @@ export default function Quedada() {
             setError(null);
 
             try {
-                const response = await fetch(`http://192.168.17.198:3080/api/getHangoutById`, {
+                const response = await fetch(`http://${ip}:3080/api/getHangoutById`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId, hangoutId: id }),
@@ -145,7 +146,7 @@ export default function Quedada() {
     async function salirQuedada() {
         const id_quedada = quedada?.id;
         if (id_quedada) {
-            await fetch('http://192.168.17.198:3080/api/leaveHangout', {
+            await fetch(`http://${ip}:3080/api/leaveHangout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

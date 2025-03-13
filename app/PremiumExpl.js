@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
         marginTop: 10,
-        color: 'rgba(0,21,255,0.56)', // Un dorado llamativo
-        fontFamily: 'Pacifico', // O cualquier otra fuente que tengas instalada
+        color: 'rgba(0,21,255,0.56)',
+        fontFamily: 'Pacifico',
         textShadowColor: 'rgba(0, 0, 0, 0.25)',
         textShadowOffset: {width: 2, height: 2},
         textShadowRadius: 4,

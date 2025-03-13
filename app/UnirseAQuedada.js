@@ -6,6 +6,7 @@ import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 
 export default function UnirseAQuedada({ navigation }){
+    const ip = "192.168.1.111"
     const [invitationCode, setInvitationCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ export default function UnirseAQuedada({ navigation }){
         setLoading(true);
 
         try {
-            const response = await fetch('http://192.168.17.198:3080/api/joinHangout', {
+            const response = await fetch(`http://${ip}:3080/api/joinHangout`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

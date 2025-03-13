@@ -6,6 +6,7 @@ import Constants from "expo-constants";
 import {StatusBar} from "expo-status-bar";
 
 export default function InicioQuedadas(){
+    const ip = "192.168.1.111"
     const navigation = useNavigation();
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ export default function InicioQuedadas(){
                 setError(null);
 
                 try {
-                    const response = await fetch(`http://192.168.17.198:3080/api/getHangoutsUser/${userId}`);
+                    const response = await fetch(`http://${ip}:3080/api/getHangoutsUser/${userId}`);
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();

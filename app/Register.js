@@ -7,7 +7,7 @@ import Constants from "expo-constants";
 import { MaterialIcons } from '@expo/vector-icons';
 
 export default function Register() {
-    const ip = "192.168.1.111"
+    const ip = "192.168.1.67"
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
     const [campoApellidos, setApellidos] = useState('');
@@ -18,14 +18,31 @@ export default function Register() {
     const [secureText, setSecureText] = useState(true);
     const [secureRepText, setSecureRepText] = useState(true);
 
+    const [errorMensaje, setErrorMensaje] = useState('');
+
+    const validarContrasena = (password) => {
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$/;
+        return regex.test(password);
+    };
+
+    const mostrarErrorTemporal = (mensaje) => {
+        setErrorMensaje(mensaje);
+        setTimeout(() => setErrorMensaje(''), 5000);
+    };
+
     const subirFormulario = async () => {
             if (!campoCorreo || !campoNombre || !campoContra || !campoRepContra) {
-                Alert.alert('Error', 'Por favor, completa todos los campos.');
+                mostrarErrorTemporal('Por favor, completa todos los campos.');
+                return;
+            }
+
+            if (!validarContrasena(campoContra)) {
+                mostrarErrorTemporal('La contraseña debe tener entre 8 y 32 caracteres, incluir mayúsculas, minúsculas, números y símbolos.');
                 return;
             }
 
             if (campoContra !== campoRepContra) {
-                Alert.alert('Error', 'Las contraseñas no coinciden.');
+                mostrarErrorTemporal('Las contraseñas no coinciden.');
                 return;
             }
 
@@ -65,7 +82,9 @@ export default function Register() {
                     <Logo size="w-40 h-40" color="#297169" />
                     <StatusBar style="auto" />
 
-                    <Text className="my-5 font-bold text-4xl">REGISTRO</Text>
+                    <View className="h-32 items-center justify-center">
+                        <Text className="w-1/3 mx-auto font-bold text-red-500">{errorMensaje}</Text>
+                    </View>
 
                     <View className="lg:w-1/3 lg:mx-auto">
                         <View className="flex lg:flex-row gap-x-4">

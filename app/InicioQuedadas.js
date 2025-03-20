@@ -6,7 +6,7 @@ import Constants from "expo-constants";
 import {StatusBar} from "expo-status-bar";
 
 export default function InicioQuedadas(){
-    const ip = "192.168.1.111"
+    const ip = "192.168.1.67"
     const navigation = useNavigation();
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);

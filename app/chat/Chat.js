@@ -9,7 +9,7 @@ import {StatusBar} from "expo-status-bar";
 
 
 export default function Chat() {
-    const ip = "192.168.1.111"
+    const ip = "192.168.1.67"
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false)
     const [messages, setMessages] = useState([]);
@@ -68,20 +68,20 @@ export default function Chat() {
             autoConnect: true,
             reconnection: true,
         });
-
+    
         setSocket(newSocket);
-
+    
         newSocket.on("connect", () => {
             setIsConnected(true);
             console.log("Conectado al servidor");
             newSocket.emit("joinRoom", room, userId);
         });
-
+    
         newSocket.on("disconnect", () => {
             setIsConnected(false);
             console.log("Desconectado del servidor");
         });
-
+    
         return () => {
             newSocket.disconnect();
         };
@@ -145,7 +145,7 @@ export default function Chat() {
 
         const msg = { usuario: userName, idUsuario: userId, mensaje: nuevoMensaje, tiempo: Date.now() };
 
-        setMessages((prevMessages) => [...prevMessages, msg]); // Usa el estado previo para evitar pérdida de mensajes
+        setMessages((prevMessages) => [...prevMessages, msg]);
 
         socket.emit("sendMsg", room, nuevoMensaje, userName, userId, Date.now());
         setText("");

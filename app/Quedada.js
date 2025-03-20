@@ -7,7 +7,7 @@ import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 
 export default function Quedada() {
-    const ip = "192.168.1.111"
+    const ip = "192.168.1.67"
     const route = useRoute();
     const { id } = route.params || {};
     const [quedada, setQuedada] = useState(null);
@@ -183,10 +183,10 @@ export default function Quedada() {
             <StatusBar style="auto" />
             {!editarQuedada && <View>
                 {quedada && quedada.link_imagen && (
-                    <View style={styles.containerImagenQuedada}>
+                    <View className="w-full h-fit">
                         <Image
                             source={{ uri: quedada.link_imagen }}
-                            className="w-full h-32 mb-5"
+                            className="w-full h-32 lg:h-96 mb-5"
                         />
                     </View>
                 )}
@@ -239,7 +239,18 @@ export default function Quedada() {
                                     {users.map((user) => (
                                         <View key={user.id} className="flex flex-row justify-between items-center">
                                             <Text>{user.usuario.nombre_usuario}</Text>
-                                            <Text>{user.rol !== null ? user.rol : ""}</Text>
+                                            <Text>
+                                                {(() => {
+                                                    switch (user.rol) {
+                                                        case "organizador":
+                                                            return "Organizador";
+                                                        case "colaborador":
+                                                            return "Colaborador";
+                                                        default:
+                                                            return "Usuario";
+                                                    }
+                                                })()}
+                                            </Text>
                                         </View>
                                     ))}
                                 </View>

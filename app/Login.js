@@ -1,3 +1,4 @@
+// Only showing the part that needs to be modified
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform} from 'react-native';
 import "../global.css"
@@ -9,7 +10,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Login() {
-    const ip = "192.168.1.111"
+    const ip = "192.168.1.67"
     const [Auth, setAuth] = useState('');
     const [campoContra, contrasena] = useState('');
     const [secureText, setSecureText] = useState(true);
@@ -59,7 +60,7 @@ export default function Login() {
                 };
                 await storeUserSession(userData);
 
-                router.push('/InicioQuedadas');
+                router.replace('/InicioQuedadas');
             } else {
                 Alert.alert('Error', data.message || 'Credenciales inválidas.');
             }

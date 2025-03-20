@@ -11,7 +11,7 @@ import {
     View
 } from "react-native";
 import Logo from "../Logo";
-import React, { useEffect, useRef, useState } from "react";
+import React, {memo, useEffect, useRef, useState} from "react";
 import Constants from "expo-constants";
 import Svg, {Path} from "react-native-svg";
 import {StatusBar} from "expo-status-bar";
@@ -19,8 +19,7 @@ import * as Location from 'expo-location';
 import {MultipleSelectList, SelectList} from "react-native-dropdown-select-list";
 
 
-export default function Chat() {
-    const ip = "192.168.1.67"
+export default function ChatIa() {
     const scrollViewRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [textInputHeight, setTextInputHeight] = useState(85);
@@ -28,7 +27,12 @@ export default function Chat() {
     const [buttonVisible, setButtonVisible] = useState(false);
     const [inputWidth, setInputWidth] = useState("100%");
     const fadeAnim = useState(new Animated.Value(0))[0];
-    const checkSelected = [false, false];
+    const [typeSelected, setTypeSelected] = useState(false);
+    const [quantity, setQuantity] = useState('1');
+    const [type, setType] = useState(null)
+    const [budget, setBudget] = useState(null)
+    const [coords, setCoords] = useState(null)
+    const [selectedRestoration, setSelectedRestoration] = useState(false)
 
     const getLocation = async () => {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -43,38 +47,12 @@ export default function Chat() {
     };
 
     useEffect(() => {
-        const showListener = Keyboard.addListener("keyboardDidShow", (e) => {
-            setKeyboardHeight(e.endCoordinates.height);
-        });
-        const hideListener = Keyboard.addListener("keyboardDidHide", () => {
-            setKeyboardHeight(0);
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        });
-        return () => {
-            showListener.remove();
-            hideListener.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        if (text.trim().length > 0) {
-            setButtonVisible(true);
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 300,
-                useNativeDriver: true,
-            }).start();
-            setInputWidth("85%");
+        if (type === "Restauración") {
+            setSelectedRestoration(true)
         } else {
-            setButtonVisible(false);
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-            }).start();
-            setInputWidth("100%");
+            setSelectedRestoration(false)
         }
-    }, [text]);
+    }, [type]);
 
     const handleLayout = (e) => {
         const { height } = e.nativeEvent.layout;
@@ -85,18 +63,20 @@ export default function Chat() {
         const [selected, setSelected] = React.useState([]);
 
         const data = [
-            {key:'1', value:'Restauracion'},
+            {key:'1', value:'Restauración'},
             {key:'2', value:'Hoteles'},
             {key:'3', value:'Prostibulos'}
         ]
         const handleSelect = (val) => {
             setSelected(val);
-            checkSelected[0] = true;
-            checkSelected[1] = true;
+            setType(val)
+            typeSelected ? setTypeSelected(false) : setTypeSelected(true);
         }
 
         return(
             <SelectList
+                searchPlaceholder={"Buscar recomendaciones..."}
+                placeholder="Tipo de Recomendacion"
                 setSelected={handleSelect}
                 data={data}
                 save="value"
@@ -108,6 +88,111 @@ export default function Chat() {
         )
 
     };
+
+
+    const loadMessages = async () => {
+        const mensajes = await fetch(`http://192.168.17.198:3080/api/getAiMessages/XrpqKteN4yvCAjinw4s1`)
+        const mensajesArray = [];
+        Array.from(mensajes.docs).forEach(doc => {
+            mensajesArray.push(doc.data());
+        });
+        console.log(mensajesArray);
+        return mensajesArray
+            .map((_, i) => (
+                <View
+                    key={i}
+                    className={`pl-6 pr-2 pt-3 pb-1 rounded-lg max-w-[70%] mt-4 bg-gray-700 self-start rounded-bl-none`}
+                >
+                    <Text
+                        className={`text-yellow-300 self-start`}>
+                        Nombre Usuario
+                    </Text>
+                    <Text className="text-white pr-4"></Text>
+                    <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
+                </View>
+            ))
+    }
+
+
+    const requestIa = async () => {
+        getLocation().then(async coords => {
+            await setCoords(coords.latitude + ", " + coords.longitude);
+        })
+        if (coords) {
+            const promptParams = {
+                coords: coords,
+                cantidad: quantity,
+                busqueda_de: type,
+                tipoRestauracion: budget,
+                id: "XrpqKteN4yvCAjinw4s1"
+            }
+            console.log(promptParams)
+            return await fetch(`http://localhost:3080/api/iaRequest`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(promptParams),
+            })
+        }
+    }
+
+    const Quantity = () => {
+
+        const [selected, setSelected] = React.useState([]);
+        const data = [
+            {key:'1', value:'1'},
+            {key:'2', value:'2'},
+            {key:'3', value:'3'},
+            {key:'4', value:'4'},
+            {key:'5', value:'5'}
+        ]
+        const handleSelect = (val) => {
+            setSelected(val);
+            setQuantity(val);
+            console.log(val);
+        }
+        return(
+            <SelectList
+                searchPlaceholder={"Cantidad de recomendaciones..."}
+                defaultOption={{ key: '1', value: '1' }}
+                setSelected={handleSelect}
+                data={data}
+                save="value"
+                label="Quantity"
+                boxStyles={{
+                    width: 300,
+                }}
+            />
+        )
+    }
+    const Presupuesto = memo(({ setType, setTypeSelected }) => {
+
+        const [selected, setSelected] = React.useState([]);
+        const data = [
+            {key:'1', value:'Básico (Bajo presupuesto)'},
+            {key:'2', value:'Normal (Presupuesto medio)'},
+            {key:'3', value:'De lujo (Alto presupuesto)'}
+        ]
+        const handleSelect = (val) => {
+            setSelected(val);
+            setBudget(val);
+            console.log(val);
+        }
+        return(
+            <SelectList
+                searchPlaceholder={"Presupuesto..."}
+                placeholder="Presupuesto"
+                setSelected={handleSelect}
+                data={data}
+                save="value"
+                label="Budget"
+                boxStyles={{
+                    width: 300,
+                }}
+            />
+        )
+    });
 
     return (
         <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full h-screen relative">
@@ -133,25 +218,7 @@ export default function Chat() {
                         scrollViewRef.current?.scrollToEnd({ animated: true })
                     }
                 >
-                    {Array(70)
-                        .fill(0)
-                        .map((_, i) => (
-                            <View
-                                key={i}
-                                className={`pl-6 pr-2 pt-3 pb-1 rounded-lg max-w-[70%] mt-4 ${
-                                    i % 2 === 0 ? "bg-gray-700 self-start rounded-bl-none" : "bg-blue-500 self-end rounded-br-none"
-                                }`}
-                            >
-                                <Text
-                                    className={`text-yellow-300 self-start ${
-                                        i % 2 === 0 ? "" : "hidden"}`}>
-                                    Nombre Usuario
-                                </Text>
-                                <Text className="text-white pr-4">Marcos Escoria, Basura, Mierda, Porquería {i + 1}</Text>
-                                <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
-                            </View>
-                        ))
-                    }
+                    {console.log(loadMessages())}
                 </ScrollView>
             </View>
 
@@ -160,33 +227,38 @@ export default function Chat() {
                 className="absolute bg-white w-full flex gap-x-4 flex-row justify-center p-4"
             >
 
-                {Categories()}
+                <View className="flex flex-col gap-y-4 md:flex-row md:gap-x-4">
+                    <View className="flex flex-col gap-x-4">
+                        <Text className="text-lg text-center font-semibold">Cantidad de Recomendaciones: </Text>
+                        {Quantity()}
+                    </View>
+                    <View className="flex flex-col gap-x-4">
+                        <Text className="text-lg text-center font-semibold">Tipo de Recomendaciones: </Text>
+                        {Categories()}
+                    </View>
+                    { selectedRestoration  && (
+                        <View className="flex flex-col gap-x-4">
+                            <Text className="text-lg text-center font-semibold">Presupuesto: </Text>
+                            <Presupuesto setBudget={setBudget} />
+                        </View>)
+                    }
+                </View>
+
 
                 <TouchableOpacity
                     style={{
-                        backgroundColor: "#00ad3a",
+                        backgroundColor: typeSelected ? "#00ad3a" : "#aaaaaa",
                         width: 48,
                         height: 48,
                         borderRadius: 24,
                         justifyContent: "center",
                         alignItems: "center",
-                        disabled: !checkSelected[0] || !checkSelected[1]
                     }}
+                    disabled={!typeSelected}
                     onPress={() => {
-                        getLocation().then(async coords => {
-                            const promptParams = {
-                                coords: coords.latitude + ", " + coords.longitude,
-                                cantidad: 5,
-                                busquedaDe: Categories().selected.map(item => item.value).join(", "),
-                            }
-                            const result = await fetch(`http://${ip}:3080/api/iaRequest`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify(userData),
-                            })
-                        });
+                        requestIa().then(async result => {
+                            console.log(await result)
+                        })
                     }}
 
                 >

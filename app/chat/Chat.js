@@ -1,15 +1,15 @@
 import {Animated, Keyboard, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Logo from "../Logo";
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Constants from "expo-constants";
 import Svg, {Path} from "react-native-svg";
-import { io } from "socket.io-client";
+import {io} from "socket.io-client";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {StatusBar} from "expo-status-bar";
+import forge from 'node-forge';
 
 
 export default function Chat() {
-    const ip = "192.168.1.67"
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false)
     const [messages, setMessages] = useState([]);
@@ -26,6 +26,11 @@ export default function Chat() {
     const [userId, setUserId] = useState("1");
     const [userName, setUserName] = useState("UsuarioAnonimo")
 
+    const [pribateK, setPribateK] = useState("")
+    const [publicK, setPublicK] = useState("")
+    const [keys, setKeys] = useState([])
+
+
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
         useEffect(() => {
             const getUserSession = async () => {
@@ -35,6 +40,8 @@ export default function Chat() {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);
                         setUserName(userData.nombre_usuario)
+                        setPribateK(userData.clavePrivada)
+                        setPublicK(userData.clavePublica)
                     }
                 } catch (error) {
                     console.error("Error al obtener la sesión:", error);
@@ -52,6 +59,9 @@ export default function Chat() {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);
                         setUserName(userData.nombre_usuario)
+                        setPribateK(userData.clavePrivada)
+                        setPublicK(userData.clavePublica)
+
                     }
                 } catch (error) {
                     console.error("Error al obtener la sesión:", error);
@@ -63,41 +73,56 @@ export default function Chat() {
     }
 
     useEffect(() => {
-        const newSocket = io(`http://${ip}:3090`, {
+        if (userId === "1") return;
+        const newSocket = io("http://localhost:3090", {
             query: { userId },
             autoConnect: true,
             reconnection: true,
         });
-    
+
         setSocket(newSocket);
-    
+
         newSocket.on("connect", () => {
             setIsConnected(true);
-            console.log("Conectado al servidor");
-            newSocket.emit("joinRoom", room, userId);
+            console.log("Conectado al servidor con userId:", userId);
+
+            newSocket.emit("joinRoom", room, userId, publicK);
         });
-    
+
         newSocket.on("disconnect", () => {
             setIsConnected(false);
             console.log("Desconectado del servidor");
         });
-    
+
         return () => {
             newSocket.disconnect();
         };
-    }, []);
+    }, [userId, publicK]);
 
     useEffect(() => {
         if (!socket) return;
 
         const handleMessages = (msgs) => {
-            setMessages(Object.values(msgs));
+            desencriptarMensaje(msgs);
+            //setMessages(Object.values(msgs));
+        };
+        const handlePk = (pk) => {
+            setKeys([])
+            const keysArray = Object.entries(pk).map(([userId, value]) => ({
+                userId,
+                pk: value.llavePublica,
+            }));
+
+            setKeys((prevKeys) => [...prevKeys, ...keysArray]);
         };
 
         socket.on("getMsgs", handleMessages);
 
+        socket.on("getPk", handlePk);
+
         return () => {
             socket.off("getMsgs", handleMessages);
+            socket.off("getPk", handlePk);
         };
     }, [socket]);
 
@@ -143,18 +168,113 @@ export default function Chat() {
     const sendMessage = () => {
         if (!socket || !nuevoMensaje.trim()) return;
 
-        const msg = { usuario: userName, idUsuario: userId, mensaje: nuevoMensaje, tiempo: Date.now() };
+        const mensajeEncriptado = encriptarMensaje(nuevoMensaje);
 
-        setMessages((prevMessages) => [...prevMessages, msg]);
+        socket.emit("sendMsg", room, mensajeEncriptado, userName, userId, Date.now());
 
-        socket.emit("sendMsg", room, nuevoMensaje, userName, userId, Date.now());
-        setText("");
     };
 
-    const formatTime = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const encriptarMensaje = (mensaje) => {
+        const aesKey = forge.random.getBytesSync(16);
+        const iv = forge.random.getBytesSync(16); // IV aleatorio
+
+        const cipher = forge.cipher.createCipher('AES-CBC', aesKey);
+        cipher.start({ iv: iv }); // Usar el IV aquí
+        cipher.update(forge.util.createBuffer(mensaje));
+        cipher.finish();
+        const encryptedMessage = cipher.output.getBytes();
+
+        const encryptedKeys = {};
+
+        for (let key in keys) {
+            if (keys[key].pk !== null && keys[key].pk !== ""){
+                const publicKey = forge.pki.publicKeyFromPem(keys[key].pk);
+                encryptedKeys[keys[key].userId] = forge.util.encode64(publicKey.encrypt(aesKey, 'RSA-OAEP'));
+            }
+        }
+
+        console.log(encryptedKeys)
+
+        return {
+            message: forge.util.encode64(encryptedMessage),
+            iv: forge.util.encode64(iv),  // Guardar el IV en Base64
+            encryptedAESKey: encryptedKeys,
+        };
     };
+
+    const desencriptarMensaje = (mensaje) => {
+        console.log(keys)
+        try {
+            setMessages([])
+            // Recorrer todos los mensajes en el objeto `mensaje`
+            for (const timestampKey of Object.keys(mensaje)) {
+
+                const mensajeObj = mensaje[timestampKey];
+
+                if (!mensajeObj?.mensaje?.encryptedAESKey) {
+                    console.warn(`⚠️ Mensaje con timestamp ${timestampKey} no tiene claves encriptadas.`);
+                    continue; // Saltar al siguiente mensaje si no hay claves
+                }
+
+                if (!pribateK || typeof pribateK !== "string") {
+                    throw new Error("Clave privada no válida.");
+                }
+
+                const clavePrivada = forge.pki.privateKeyFromPem(pribateK);
+                if (typeof clavePrivada !== "object" || !clavePrivada.decrypt) {
+                    throw new Error("La clave privada no es válida.");
+                }
+
+                // Buscar la clave encriptada correspondiente al usuario
+                const encryptedAESKey = mensajeObj.mensaje.encryptedAESKey[userId];
+
+                if (!encryptedAESKey) {
+                    console.warn(`⚠️ No se encontró clave AES encriptada para el usuario: ${userId}`);
+                    continue; // Saltar al siguiente mensaje si no hay clave AES para este usuario
+                }
+
+                // Desencriptar la clave AES con la clave privada RSA
+                const aesKey = clavePrivada.decrypt(forge.util.decode64(encryptedAESKey), 'RSA-OAEP');
+
+                if (!mensajeObj.mensaje.message) {
+                    console.warn(`⚠️ No hay mensaje cifrado en los datos del timestamp ${timestampKey}.`);
+                    continue;
+                }
+
+                // Desencriptar el mensaje con AES
+                const decipher = forge.cipher.createDecipher('AES-CBC', aesKey);
+                const iv = forge.util.decode64(mensajeObj.mensaje.iv); // Asegúrate de que el IV esté correctamente en Base64
+
+                decipher.start({ iv: iv });
+                decipher.update(forge.util.createBuffer(forge.util.decode64(mensajeObj.mensaje.message)));
+
+                const success = decipher.finish();
+
+                if (!success) {
+                    console.error("❌ Error: La desencriptación del mensaje falló.");
+                    continue;
+                }
+
+                const mensajeDesencriptado = decipher.output.toString();
+
+                const msg = {
+                    usuario: mensajeObj.usuario,
+                    idUsuario: mensajeObj.idUser,
+                    mensaje: mensajeDesencriptado,
+                    tiempo: mensajeObj.tiempo };
+
+                setMessages((prevMessages) => [...prevMessages, msg]); // Usa el estado previo para evitar pérdida de mensajes
+
+            }
+        } catch (error) {
+            console.error("❌ Error al desencriptar mensaje:", error.message);
+            return null;
+        }
+    };
+
+
+
+
 
     return (
         <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full h-screen relative">
@@ -185,14 +305,14 @@ export default function Chat() {
                         <View
                             key={i}
                             className={`pl-6 pr-2 pt-3 pb-1 rounded-lg max-w-[70%] mt-4 ${
-                                msg.idUser === userId ? "bg-blue-500 self-end rounded-br-none" : "bg-gray-700 self-start rounded-bl-none"
+                                msg.idUsuario === userId ? "bg-blue-500 self-end rounded-br-none" : "bg-gray-700 self-start rounded-bl-none"
                             }`}
                         >
-                            { msg.idUser !== userId &&
-                                <Text className="text-yellow-300 -ml-3 font-semibold mb-1 self-start">{msg.usuario}</Text>
+                            { msg.idUsuario !== userId &&
+                                <Text className="text-yellow-300 self-start">{msg.usuario}</Text>
                             }
                             <Text className="text-white pr-4">{msg.mensaje}</Text>
-                            <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32 leading-[0] mb-2">{formatTime(msg.tiempo)}</Text>
+                            <Text className="text-sm text-white opacity-60 self-end leading-1 pl-32">12:30</Text>
                         </View>
                     ))}
                 </ScrollView>

@@ -1,10 +1,12 @@
-import {Text, Alert, TextInput, StyleSheet, View, TouchableOpacity} from 'react-native';
-import {useEffect, useState} from "react";
-import { StatusBar } from "expo-status-bar";
-import { Link } from "expo-router";
+import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {useState} from "react";
+import {StatusBar} from "expo-status-bar";
+import {Link} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
-import { MaterialIcons } from '@expo/vector-icons';
+import {MaterialIcons} from '@expo/vector-icons';
+import forge from 'node-forge';
+import CryptoJS from 'crypto-js';
 
 export default function Register() {
     const ip = "192.168.1.67"
@@ -46,12 +48,22 @@ export default function Register() {
                 return;
             }
 
+            // Generar clave pública y privada
+            const keyPair = forge.pki.rsa.generateKeyPair({ bits: 2048 });
+
+            const publicKeyPem = forge.pki.publicKeyToPem(keyPair.publicKey);
+            const privateKeyPem = forge.pki.privateKeyToPem(keyPair.privateKey);
+
+            const contrasenaHash = await HashContrasena(campoContra);
+
             const params = {
                 correo: campoCorreo,
                 nombre: campoNombre,
                 nombre_usuario: campoUsuario,
                 apellidos: campoApellidos,
                 contrasena: campoContra,
+                clavePublica: publicKeyPem,
+                clavePrivada: encryptPrivateKey(privateKeyPem, contrasenaHash)
             };
 
             const response = await fetch(`http://${ip}:3080/api/register`, {
@@ -70,6 +82,17 @@ export default function Register() {
                 const jsonResponse = await response.json();
 
             }
+    };
+    const HashContrasena = async (contrasena) => {
+        return CryptoJS.SHA256(contrasena).toString(CryptoJS.enc.Hex);
+    };
+
+    const encryptPrivateKey = (privateKeyPem, password) => {
+        const encryptedPrivateKey = forge.pki.encryptRsaPrivateKey(
+            forge.pki.privateKeyFromPem(privateKeyPem),
+            password
+        );
+        return encryptedPrivateKey;
     };
 
     return (

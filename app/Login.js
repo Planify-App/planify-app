@@ -1,4 +1,3 @@
-// Only showing the part that needs to be modified
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform} from 'react-native';
 import "../global.css"
@@ -8,6 +7,8 @@ import Logo from "./Logo";
 import Constants from "expo-constants";
 import {MaterialIcons} from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import forge from "node-forge";
+import CryptoJS from "crypto-js";
 
 export default function Login() {
     const ip = "192.168.1.67"
@@ -51,12 +52,18 @@ export default function Login() {
             const data = await response.json();
 
             if (response.ok) {
+                const clavePrivadaObj = forge.pki.decryptRsaPrivateKey(data.clavePrivada, await HashContrasena(campoContra));
+
+                const clavePrivadaPEM = forge.pki.privateKeyToPem(clavePrivadaObj);
+
                 const userData = {
                     nombre_usuario: data.nombre_usuario,
                     token: data.token,
                     refreshToken: data.refreshToken,
                     refreshTokenUpdated: data.refreshTokenUpdated,
                     userId: data.userId,
+                    clavePublica: data.clavePublica,
+                    clavePrivada: clavePrivadaPEM
                 };
                 await storeUserSession(userData);
 
@@ -70,9 +77,11 @@ export default function Login() {
             console.error('Error en la petición:', error);
         }
     };
+    const HashContrasena = async (contrasena) => {
+        return CryptoJS.SHA256(contrasena).toString(CryptoJS.enc.Hex);
+    };
 
     return (
-        <>
             <View style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
                 <View className="flex items-center justify-center">
                     <View className="max-w-[89%] mx-auto">
@@ -122,7 +131,6 @@ export default function Login() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </>
     );
 }
 

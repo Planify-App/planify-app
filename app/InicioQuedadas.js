@@ -4,9 +4,9 @@ import {useNavigation} from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import {StatusBar} from "expo-status-bar";
+import Globals from "./globals";
 
 export default function InicioQuedadas(){
-    const ip = "192.168.1.67"
     const navigation = useNavigation();
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -57,7 +57,7 @@ export default function InicioQuedadas(){
                 setError(null);
 
                 try {
-                    const response = await fetch(`http://${ip}:3080/api/getHangoutsUser/${userId}`);
+                    const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutsUser/${userId}`);
                     console.log(response);
                     if (!response.ok) {
                         const errorText = await response.text();

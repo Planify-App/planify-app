@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {StatusBar} from "expo-status-bar";
+import Globals from "./globals";
 
 export default function MenuNoLog() {
     const navigation = useNavigation();

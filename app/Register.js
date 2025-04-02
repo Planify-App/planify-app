@@ -7,9 +7,10 @@ import Constants from "expo-constants";
 import {MaterialIcons} from '@expo/vector-icons';
 import forge from 'node-forge';
 import CryptoJS from 'crypto-js';
+import Globals from "./globals";
 
 export default function Register() {
-    const ip = "192.168.1.67"
+
     const [campoCorreo, setCorreo] = useState('');
     const [campoNombre, setNombre] = useState('');
     const [campoApellidos, setApellidos] = useState('');
@@ -66,7 +67,7 @@ export default function Register() {
                 clavePrivada: encryptPrivateKey(privateKeyPem, contrasenaHash)
             };
 
-            const response = await fetch(`http://${ip}:3080/api/register`, {
+            const response = await fetch(`http://${Globals.ip}:3080/api/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

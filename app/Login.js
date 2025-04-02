@@ -9,9 +9,10 @@ import {MaterialIcons} from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import forge from "node-forge";
 import CryptoJS from "crypto-js";
+import Globals from "./globals";
 
 export default function Login() {
-    const ip = "192.168.1.67"
+    const ip = "localhost"
     const [Auth, setAuth] = useState('');
     const [campoContra, contrasena] = useState('');
     const [secureText, setSecureText] = useState(true);
@@ -39,7 +40,7 @@ export default function Login() {
         }
 
         try {
-            const response = await fetch(`http://${ip}:3080/api/login`, {
+            const response = await fetch(`http://${Globals.ip}:3080/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -6,9 +6,9 @@ import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {router} from "expo-router";
 import Constants from "expo-constants";
+import Globals from "./globals";
 
 export default function PerfilUsuario() {
-    const ip = "192.168.1.111"
     const [campoAvatar, setAvatar] = useState(require('../assets/profile-photo.jpg'));
     const [campoNombreUsuario, setNombreUsuario] = useState('');
     const [campoCorreo, setCorreo] = useState('');
@@ -76,7 +76,7 @@ export default function PerfilUsuario() {
         const fetchUserInfo = async () => {
             if (userId) {
                 try {
-                    const response = await fetch(`http://${ip}:3080/api/getUserInfo/${userId}`);
+                    const response = await fetch(`http://${Globals.ip}:3080/api/getUserInfo/${userId}`);
                     const data = await response.json();
                     setOriginalValues({
                         campoAvatar: data.avatar,
@@ -135,7 +135,7 @@ export default function PerfilUsuario() {
         formData.append('userId', userId);
 
         try {
-            let response = await fetch(`http://${ip}:3080/api/upload`, { // Endpoint de tu backend
+            let response = await fetch(`http://${Globals.ip}:3080/api/upload`, { // Endpoint de tu backend
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -208,7 +208,7 @@ export default function PerfilUsuario() {
         console.log("Enviando datos:", JSON.stringify(data, null, 2));
 
         try {
-            const response = await fetch(`http://${ip}:3080/api/editUserInfo`, {
+            const response = await fetch(`http://${Globals.ip}:3080/api/editUserInfo`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

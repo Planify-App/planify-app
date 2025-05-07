@@ -1,15 +1,11 @@
 // app/globals.js
 
 const Globals = {
-    ip: "localhost",
-    isLoged: false,
+    ip: "192.168.19.245",
     quedadas: [],
 
     setIp: (nuevoValor) => {
         Globals.ip = nuevoValor;
-    },
-    setIsLoged: (nuevoValor) => {
-        Globals.isLoged = nuevoValor;
     },
 };
 

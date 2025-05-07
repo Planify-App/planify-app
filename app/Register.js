@@ -1,13 +1,14 @@
-import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {useState} from "react";
+import {Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {useEffect, useState} from "react";
 import {StatusBar} from "expo-status-bar";
-import {Link} from "expo-router";
+import {Link, router} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {MaterialIcons} from '@expo/vector-icons';
 import forge from 'node-forge';
 import CryptoJS from 'crypto-js';
 import Globals from "./globals";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Register() {
 
@@ -23,6 +24,39 @@ export default function Register() {
 
     const [errorMensaje, setErrorMensaje] = useState('');
 
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+            getUserSession();
+        }, []);
+    }
+
     const validarContrasena = (password) => {
         const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,32}$/;
         return regex.test(password);
@@ -30,7 +64,7 @@ export default function Register() {
 
     const mostrarErrorTemporal = (mensaje) => {
         setErrorMensaje(mensaje);
-        setTimeout(() => setErrorMensaje(''), 5000);
+        setTimeout(() => setErrorMensaje(''), 20000);
     };
 
     const subirFormulario = async () => {
@@ -67,22 +101,39 @@ export default function Register() {
                 clavePrivada: encryptPrivateKey(privateKeyPem, contrasenaHash)
             };
 
-            const response = await fetch(`http://${Globals.ip}:3080/api/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(params),
-            }).then(response => console.log(response.json()))
-            .catch(error => console.log("un error " + error));
+            try {
+                const response = await fetch(`http://${Globals.ip}:3080/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params),
+                });
 
-            if (!response.ok) {
-                const errorResponse = await response.json();
-                Alert.alert('Error', `Error: ${response.status} - ${errorResponse.message}`);
-            } else {
                 const jsonResponse = await response.json();
 
+                if (response.status !== 200) {
+                } else {
+                    window.alert("Verifica tu cuenta a través del correo");
+                    router.replace('/InicioQuedadas');
+
+                    Alert.alert(
+                        'Info',
+                        'Verifica tu cuenta a través del correo',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => router.replace('/InicioQuedadas'),
+                            },
+                        ],
+                        { cancelable: false }
+                    );
+                }
+            } catch (error) {
+                console.log("un error: " + error);
+                Alert.alert('Error', 'No se pudo conectar con el servidor.');
             }
+
     };
     const HashContrasena = async (contrasena) => {
         return CryptoJS.SHA256(contrasena).toString(CryptoJS.enc.Hex);

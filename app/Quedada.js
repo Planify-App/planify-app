@@ -31,6 +31,8 @@ export default function Quedada() {
                     if (session) {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);
+                    }else {
+                        router.replace('/MenuNoLog');
                     }
                 } catch (error) {
                     console.error("Error al obtener la sesión:", error);
@@ -47,6 +49,8 @@ export default function Quedada() {
                     if (session) {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);
+                    }else {
+                        router.replace('/MenuNoLog');
                     }
                 } catch (error) {
                     console.error("Error al obtener la sesión:", error);

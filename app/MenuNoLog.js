@@ -1,13 +1,50 @@
 import * as React from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from "react-native";
+import {StyleSheet, View, Text, TouchableOpacity, Platform} from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import Logo from "./Logo";
 import Constants from "expo-constants";
 import {StatusBar} from "expo-status-bar";
 import Globals from "./globals";
+import {useEffect} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {router} from "expo-router";
 
 export default function MenuNoLog() {
     const navigation = useNavigation();
+
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+            getUserSession();
+        }, []);
+    }
+
     return (
         <>
             <View style={{paddingTop: Constants.statusBarHeight}} className="bg-[#DBF3EF] w-full min-h-full lg:h-screen">

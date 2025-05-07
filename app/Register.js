@@ -1,4 +1,4 @@
-import {Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {useEffect, useState} from "react";
 import {StatusBar} from "expo-status-bar";
 import {Link, router} from "expo-router";
@@ -149,7 +149,7 @@ export default function Register() {
 
     return (
         <>
-            <View style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
+            <ScrollView style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
                 <View className="flex items-center justify-center">
                     <View className="max-w-[95%] mx-auto">
                         <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido a Planify</Text>
@@ -256,7 +256,7 @@ export default function Register() {
                         </Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
         </>
     );
 }

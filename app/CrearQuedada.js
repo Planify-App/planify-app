@@ -32,6 +32,8 @@ export default function CrearQuedada() {
     const [campoNombreQuedada, nombreQuedada] = useState('');
     const [campoDescripcion, descripcion] = useState('');
 
+    const [userId, setUserId] = useState(null);
+
     useEffect(() => {
         const checkSession = async () => {
             if (!navigationState?.key) return;
@@ -47,6 +49,7 @@ export default function CrearQuedada() {
 
                 if (session) {
                     const userData = JSON.parse(session);
+                    setUserId(userData.userId);
                 } else {
                     router.replace('/MenuNoLog');
                 }
@@ -123,12 +126,12 @@ export default function CrearQuedada() {
 
     const handleSave = async () => {
         const data = {
-            correo: 'edu@eduni.dev',
+            userID: userId,
             nombre_quedada: campoNombreQuedada,
             descripcion_quedada: campoDescripcion,
-            fecha_hora_inicio: startDate.toString() + startTime.toString(),
+            fecha_hora_inicio: `${startDate} ${startTime}`,
             mas_de_un_dia: isMultiDay,
-            fecha_hora_final: endDate.toString() + endTime.toString(),
+            fecha_hora_final: `${endDate} ${endTime}`,
             link_imagen: null,
             mostrar_proximos_eventos: true,
             mostrar_asistentes: true,
@@ -144,12 +147,20 @@ export default function CrearQuedada() {
                 },
                 body: JSON.stringify(data),
             });
+
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            window.alert("La quedada se ha guardado correctamente.");
             Alert.alert("Éxito", "La quedada se ha guardado correctamente.");
+            router.replace('/InicioQuedadas');
+
         } catch (error) {
             console.error(error);
             Alert.alert("Error", "No se pudo conectar con el servidor.");
         }
     };
+
 
     return (
         <View style={{paddingTop: Constants.statusBarHeight}}>

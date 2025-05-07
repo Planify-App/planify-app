@@ -20,8 +20,7 @@ import {MultipleSelectList, SelectList} from "react-native-dropdown-select-list"
 
 
 export default function Chat() {
-    const ip = "192.168.1.111" +
-        ""
+    const ip = "192.168.1.67"
     const scrollViewRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [textInputHeight, setTextInputHeight] = useState(85);

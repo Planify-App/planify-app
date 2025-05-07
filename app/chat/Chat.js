@@ -1,6 +1,7 @@
 import {Animated, Keyboard, Platform, ScrollView, Text, TextInput, TouchableOpacity, View} from "react-native";
 import Logo from "../Logo";
 import React, {useEffect, useRef, useState} from "react";
+import { useRoute } from "@react-navigation/native";
 import Constants from "expo-constants";
 import Svg, {Path} from "react-native-svg";
 import {io} from "socket.io-client";
@@ -10,6 +11,9 @@ import forge from 'node-forge';
 
 
 export default function Chat() {
+    const route = useRoute();
+
+    const { id } = route.params || {};
     const [socket, setSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false)
     const [messages, setMessages] = useState([]);
@@ -22,7 +26,7 @@ export default function Chat() {
     const [buttonVisible, setButtonVisible] = useState(false);
     const [inputWidth, setInputWidth] = useState("100%");
     const fadeAnim = useState(new Animated.Value(0))[0];
-    const room = "miSalaDeChat2";
+    const room = id;
     const [userId, setUserId] = useState("1");
     const [userName, setUserName] = useState("UsuarioAnonimo")
 
@@ -54,7 +58,7 @@ export default function Chat() {
         useEffect(() => {
             const getUserSession = async () => {
                 try {
-                    const session = sessionStorage.getItem("userSession");
+                    const session = localStorage.getItem("userSession");
                     if (session) {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);

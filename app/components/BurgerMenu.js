@@ -40,7 +40,7 @@ export default function BurgerMenu() {
       }
     } else if(Platform.OS === 'web') {
       try {
-        sessionStorage.removeItem('userSession');
+        localStorage.removeItem('userSession');
         toggleMenu();
         router.replace('/MenuNoLog');
       } catch (error) {

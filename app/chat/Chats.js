@@ -77,8 +77,8 @@ export default function Chats() {
                         className="border-b-2 border-gray-300 py-4 px-8 w-full"
                         onPress={() => router.push('/chat/ChatIa')}
                     >
-                        <View className="flex flex-row items-center gap-x-4 justify-between">
-                            <View className="flex flex-row items-center gap-x-4">
+                        <View className="flex flex-row gap-x-4 justify-between">
+                            <View className="flex flex-row gap-x-4">
                                 <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
                                 <Text className="font-semibold text-lg">Chat IA</Text>
                             </View>
@@ -102,7 +102,7 @@ export default function Chats() {
                         className="border-b-2 border-gray-300 py-4 px-8 w-full"
                         onPress={() => router.push('/chat/ChatIa')}
                     >
-                        <View className="flex flex-row items-center gap-x-4 justify-between">
+                        <View className="flex flex-row gap-x-4 justify-between">
                             <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
                             <Text className="font-semibold text-lg">Chat IA</Text>
                             <PinIcon />
@@ -124,9 +124,9 @@ export default function Chats() {
                     className="border-b-2 border-gray-300 py-4 px-8 w-full"
                     onPress={() => router.push('/chat/ChatIa')}
                 >
-                    <View className="flex flex-row gap-x-4 justify-between">
+                    <View className="flex flex-row items-center gap-x-4 justify-between">
                         <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
-                        <Text className="font-semibold text-lg">Chat IA</Text>
+                        <Text className="font-semibold text-lg flex-1 pl-2">Chat IA</Text>
                         <PinIcon />
                     </View>
                 </TouchableOpacity>

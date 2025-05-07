@@ -6,19 +6,24 @@ import BurgerMenu from "./components/BurgerMenu";
 
 export default function Layout() {
     const segments = useSegments();
-
-    const isAuthScreen = segments[0] === "chat" || segments[0] === "Login" || segments[0] === "Register" || segments[0] === "MenuNoLog";
+    
+    const isSpecificChatScreen = segments[0] === "chat" && (segments[1] === "Chat" || segments[1] === "ChatIa");
+    
+    const isAuthScreen = segments[0] === "Login" || segments[0] === "Register" || segments[0] === "MenuNoLog";
+    
+    const shouldSkipNavigation = isSpecificChatScreen || isAuthScreen;
     
     const contentStyle = Platform.OS === 'ios' || Platform.OS === 'android' 
         ? { ...styles.pag, paddingBottom: 70 }
         : styles.pag;
 
-    if (isAuthScreen) {
+    if (shouldSkipNavigation) {
         return <Slot />;
     }
 
     return (
         <View style={{ flex: 1, backgroundColor: "#DBF3EF" }}>
+            {(Platform.OS === 'web') && <BottomNavigation />}
             <ScrollView style={{ marginTop: Constants.statusBarHeight }}>
                 <View style={contentStyle}>
                     <Slot />

@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform} from 'react-native';
+import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform, ScrollView} from 'react-native';
 import "../global.css"
 import {useEffect, useState} from "react";
 import {Link, router} from "expo-router";
@@ -116,12 +116,13 @@ export default function Login() {
     };
 
     return (
+        <ScrollView style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF]">
             <View style={styles.view} className="w-full min-h-full lg:min-h-screen bg-[#DBF3EF] pb-10">
                 <View className="flex items-center justify-center">
                     <View className="max-w-[89%] mx-auto">
                         <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido de nuevo a Planify</Text>
                     </View>
-                    <Logo size="w-40 h-40" color="#297169" />
+                    <Logo size="w-32 h-32 mb-5 md:w-60 md:h-60" color="#297169" />
                     <StatusBar style="auto" />
                     <Text className="my-5 font-bold text-4xl">Iniciar Sesión</Text>
 
@@ -165,6 +166,7 @@ export default function Login() {
                     </TouchableOpacity>
                 </View>
             </View>
+        </ScrollView>
     );
 }
 

@@ -154,7 +154,7 @@ export default function Register() {
                     <View className="max-w-[95%] mx-auto">
                         <Text className="my-5 text-center text-balance font-bold text-4xl">Bienvenido a Planify</Text>
                     </View>
-                    <Logo size="w-40 h-40" color="#297169" />
+                    <Logo size="w-32 h-32 mb-5 md:w-60 md:h-60" color="#297169" />
                     <StatusBar style="auto" />
 
                     <View className="h-32 items-center justify-center">

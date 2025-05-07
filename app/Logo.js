@@ -2,15 +2,15 @@ import React from "react";
 import Svg, { G, Path } from "react-native-svg";
 import {View} from "react-native";
 
-export default function Logo({size, color}) {
+export default function Logo({width, height, color, size}) {
     return(
         <View className={size}>
             <Svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 256 256"
                 preserveAspectRatio="xMidYMid meet"
-                width="100%"
-                height="100%"
+                width={width}
+                height={height}
                 >
 
                     <G transform="translate(0.000000,256.000000) scale(0.100000,-0.100000)"

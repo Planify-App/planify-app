@@ -47,7 +47,6 @@ export default function CrearQuedada() {
 
                 if (session) {
                     const userData = JSON.parse(session);
-                    setUserId(userData.userId);
                 } else {
                     router.replace('/MenuNoLog');
                 }
@@ -179,7 +178,6 @@ export default function CrearQuedada() {
                     <TouchableOpacity style={styles.button} onPress={() => setShowStartDatePicker(true)}>
                         <Text style={styles.buttonText}>Fecha de inicio</Text>
                     </TouchableOpacity>
-
                     {showStartDatePicker && (
                         <DateTimePicker
                             value={startDate}
@@ -191,47 +189,46 @@ export default function CrearQuedada() {
                     )}
 
                     <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
-                        <Text style={styles.buttonText}>Hora de Inicio</Text>
+                        <Text style={styles.buttonText}>Hora de inicio</Text>
                     </TouchableOpacity>
-
                     {showStartTimePicker && (
                         <DateTimePicker
                             value={startTime}
                             mode="time"
-                            locale="es-ES"
-                            is24Hour={true}
                             display="default"
+                            is24Hour={true}
+                            locale="es-ES"
                             onChange={onChangeStartTime}
                         />
                     )}
                 </>
             ) : (
-                <>
-                    <View style={styles.pickerContainer}>
-                        <View style={styles.dateRow}>
-                            <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
-                            <DateTimePicker
-                                value={startDate}
-                                mode="date"
-                                display="default"
-                                locale="es-ES"
-                                onChange={onChangeStartDate}
-                            />
-                        </View>
+                // Web version
+                <View style={styles.pickerContainer}>
+                    <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
+                    <input
+                        type="date"
+                        value={startDate.toISOString().split('T')[0]}
+                        onChange={(e) => {
+                            const newDate = new Date(e.target.value);
+                            setStartDate(newDate);
+                        }}
+                        style={styles.webInput}
+                    />
 
-                        <View style={styles.dateRow}>
-                            <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
-                            <DateTimePicker
-                                value={startTime}
-                                mode="time"
-                                locale="es-ES"
-                                is24Hour={true}
-                                display="default"
-                                onChange={onChangeStartTime}
-                            />
-                        </View>
-                    </View>
-                </>
+                    <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
+                    <input
+                        type="time"
+                        value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                        onChange={(e) => {
+                            const [hours, minutes] = e.target.value.split(':');
+                            const newTime = new Date(startTime);
+                            newTime.setHours(hours, minutes);
+                            setStartTime(newTime);
+                        }}
+                        style={styles.webInput}
+                    />
+                </View>
             )}
 
             {isMultiDay && (
@@ -240,63 +237,60 @@ export default function CrearQuedada() {
 
                     {Platform.OS === 'android' ? (
                         <>
-                            <TouchableOpacity style={styles.button} onPress={() => setShowEndDatePicker(true)}>
-                                <Text style={styles.buttonText}>Fecha de finalización</Text>
+                            <TouchableOpacity style={styles.button} onPress={() => setShowStartDatePicker(true)}>
+                                <Text style={styles.buttonText}>Fecha de inicio</Text>
                             </TouchableOpacity>
-
-                            {showEndDatePicker && (
+                            {showStartDatePicker && (
                                 <DateTimePicker
-                                    value={endDate}
+                                    value={startDate}
                                     mode="date"
                                     display="default"
                                     locale="es-ES"
-                                    onChange={onChangeEndDate}
+                                    onChange={onChangeStartDate}
                                 />
                             )}
 
-                            <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
-                                <Text style={styles.buttonText}>Hora de finalización</Text>
+                            <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
+                                <Text style={styles.buttonText}>Hora de inicio</Text>
                             </TouchableOpacity>
-
-                            {showEndTimePicker && (
+                            {showStartTimePicker && (
                                 <DateTimePicker
-                                    value={endTime}
+                                    value={startTime}
                                     mode="time"
-                                    locale="es-ES"
-                                    is24Hour={true}
                                     display="default"
-                                    onChange={onChangeEndTime}
+                                    is24Hour={true}
+                                    locale="es-ES"
+                                    onChange={onChangeStartTime}
                                 />
                             )}
                         </>
                     ) : (
-                        <>
-                            <View style={styles.pickerContainer}>
-                                <View style={styles.dateRow}>
-                                    <Text style={styles.pickerLabel}>Fecha de Finalización:</Text>
-                                    <DateTimePicker
-                                        value={endDate}
-                                        minimumDate={startDate}
-                                        mode="date"
-                                        display="default"
-                                        locale="es-ES"
-                                        onChange={onChangeEndDate}
-                                    />
-                                </View>
+                        // Web version
+                        <View style={styles.pickerContainer}>
+                            <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
+                            <input
+                                type="date"
+                                value={startDate.toISOString().split('T')[0]}
+                                onChange={(e) => {
+                                    const newDate = new Date(e.target.value);
+                                    setStartDate(newDate);
+                                }}
+                                style={styles.webInput}
+                            />
 
-                                <View style={styles.dateRow}>
-                                    <Text style={styles.pickerLabel}>Hora de Finalización:</Text>
-                                    <DateTimePicker
-                                        value={endTime}
-                                        mode="time"
-                                        locale="es-ES"
-                                        is24Hour={true}
-                                        display="default"
-                                        onChange={onChangeEndTime}
-                                    />
-                                </View>
-                            </View>
-                        </>
+                            <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
+                            <input
+                                type="time"
+                                value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                                onChange={(e) => {
+                                    const [hours, minutes] = e.target.value.split(':');
+                                    const newTime = new Date(startTime);
+                                    newTime.setHours(hours, minutes);
+                                    setStartTime(newTime);
+                                }}
+                                style={styles.webInput}
+                            />
+                        </View>
                     )}
                 </>
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform, Dimensions, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,14 +7,15 @@ import Constants from 'expo-constants';
 
 export default function BurgerMenu() {
   const [menuVisible, setMenuVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
+  const screenWidth = Dimensions.get('window').width;
+  const slideAnim = useRef(new Animated.Value(screenWidth)).current;
 
   const toggleMenu = () => {
     if (menuVisible) {
       Animated.timing(slideAnim, {
-        toValue: Dimensions.get('window').width,
+        toValue: screenWidth,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start(() => {
         setMenuVisible(false);
       });
@@ -23,23 +24,30 @@ export default function BurgerMenu() {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     }
   };
 
   const handleLogout = async () => {
-    try {
-      if (Platform.OS === 'android' || Platform.OS === 'ios') {
+    if(Platform.OS === 'android' || Platform.OS === 'ios') {
+      try {
         await AsyncStorage.removeItem('userSession');
-      } else if (Platform.OS === 'web') {
-        sessionStorage.removeItem('userSession');
+        toggleMenu();
+        router.replace('/MenuNoLog');
+      } catch (error) {
+        console.error('Error during logout:', error);
       }
-      toggleMenu();
-      router.replace('/MenuNoLog');
-    } catch (error) {
-      console.error('Error during logout:', error);
+    } else if(Platform.OS === 'web') {
+      try {
+        sessionStorage.removeItem('userSession');
+        toggleMenu();
+        router.replace('/MenuNoLog');
+      } catch (error) {
+        console.error('Error during logout:', error);
+      }
     }
+
   };
 
   const navigateTo = (screen) => {
@@ -68,44 +76,46 @@ export default function BurgerMenu() {
         <Animated.View 
           style={[
             styles.menuContainer, 
-            { transform: [{ translateX: slideAnim }] }
+            { right: slideAnim }
           ]}
         >
-          <View style={styles.menuHeader}>
-            <Text style={styles.menuTitle}>Menú</Text>
-            <TouchableOpacity 
-              style={styles.closeButton}
-              onPress={toggleMenu}
-            >
-              <Ionicons name="close" size={28} color="#297169" />
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.menuItems}>
-            <TouchableOpacity 
-              style={styles.menuItem} 
-              onPress={() => navigateTo('/FAQ')}
-            >
-              <Ionicons name="help-circle-outline" size={24} color="#444444" />
-              <Text style={styles.menuItemText}>Preguntas Frecuentes</Text>
-            </TouchableOpacity>
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Menú</Text>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={toggleMenu}
+              >
+                <Ionicons name="close" size={28} color="#297169" />
+              </TouchableOpacity>
+            </View>
             
-            <TouchableOpacity 
-              style={styles.menuItem} 
-              onPress={() => navigateTo('/PrivacyPolicy')}
-            >
-              <Ionicons name="document-text-outline" size={24} color="#444444" />
-              <Text style={styles.menuItemText}>Política de Privacidad</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.menuItem, styles.logoutItem]} 
-              onPress={handleLogout}
-            >
-              <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-              <Text style={[styles.menuItemText, styles.logoutText]}>Cerrar Sesión</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.menuItems}>
+              <TouchableOpacity 
+                style={styles.menuItem} 
+                onPress={() => navigateTo('/FAQ')}
+              >
+                <Ionicons name="help-circle-outline" size={24} color="#444444" />
+                <Text style={styles.menuItemText}>Preguntas Frecuentes</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.menuItem} 
+                onPress={() => navigateTo('/PrivacyPolicy')}
+              >
+                <Ionicons name="document-text-outline" size={24} color="#444444" />
+                <Text style={styles.menuItemText}>Política de Privacidad</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.menuItem, styles.logoutItem]} 
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
+                <Text style={[styles.menuItemText, styles.logoutText]}>Cerrar Sesión</Text>
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </Animated.View>
       )}
     </View>
@@ -143,23 +153,26 @@ const styles = StyleSheet.create({
   menuContainer: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    bottom: 0,
     width: 280,
-    height: '100%',
     backgroundColor: '#ffffff',
     zIndex: 9999,
-    paddingTop: Platform.OS === 'ios' ? 50 : Constants.statusBarHeight + 20,
-    paddingHorizontal: 15,
     shadowColor: '#000',
     shadowOffset: { width: -2, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 10,
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+  },
   menuHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingTop: Platform.OS === 'ios' ? 10 : Constants.statusBarHeight + 10,
     paddingBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -174,6 +187,7 @@ const styles = StyleSheet.create({
   },
   menuItems: {
     marginTop: 20,
+    paddingHorizontal: 15,
   },
   menuItem: {
     flexDirection: 'row',

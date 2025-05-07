@@ -25,12 +25,14 @@ export default function UnirseAQuedada({ navigation }){
 
                 if (Platform.OS === 'web') {
                     session = localStorage.getItem("userSession");
+
                 } else {
                     session = await AsyncStorage.getItem("userSession");
                 }
 
                 if (session) {
-
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
                 } else {
                     router.replace('/MenuNoLog');
                 }
@@ -47,6 +49,7 @@ export default function UnirseAQuedada({ navigation }){
         setErrorMessage('');
         setLoading(true);
 
+        console.log(invitationCode);
         try {
             const response = await fetch(`http://${Globals.ip}:3080/api/joinHangout`, {
                 method: 'POST',
@@ -67,7 +70,7 @@ export default function UnirseAQuedada({ navigation }){
 
             const data = await response.json();
             if (data.status) {
-                router.push('/MenuNoLog');
+                router.push('/InicioQuedadas');
             } else {
                 setLoading(false);
                 setErrorMessage(data.message);

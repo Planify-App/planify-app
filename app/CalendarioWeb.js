@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, TextInput } from "react-native";
 import CalendarPicker from "react-native-calendar-picker";
 
 export default class CalendarioWeb extends Component {
+
     constructor(props) {
         super(props);
         this.state = {
@@ -13,6 +14,8 @@ export default class CalendarioWeb extends Component {
         this.onDateChange = this.onDateChange.bind(this);
         this.onTimeChange = this.onTimeChange.bind(this);
     }
+
+
 
     onDateChange(date, type) {
         if (type === "END_DATE") {

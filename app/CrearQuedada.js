@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
@@ -6,9 +6,13 @@ import { useNavigation } from "@react-navigation/native";
 import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 import Globals from "./globals";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter, useRootNavigationState } from "expo-router";
 
 export default function CrearQuedada() {
     const navigation = useNavigation();
+    const router = useRouter();
+    const navigationState = useRootNavigationState();
 
     const [startDate, setStartDate] = useState(new Date());
     const [startTime, setStartTime] = useState(new Date());
@@ -27,6 +31,34 @@ export default function CrearQuedada() {
 
     const [campoNombreQuedada, nombreQuedada] = useState('');
     const [campoDescripcion, descripcion] = useState('');
+
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
+
+            try {
+                let session = null;
+
+                if (Platform.OS === 'web') {
+                    session = sessionStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
+                }
+
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                } else {
+                    router.replace('/MenuNoLog');
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
+
+        checkSession();
+    }, [navigationState]);
 
     const onChangeStartDate = (event, selectedDate) => {
         if (selectedDate) {

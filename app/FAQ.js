@@ -1,11 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import {useRouter, useRootNavigationState} from 'expo-router';
+import {useNavigation} from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function FAQ() {
+  const router = useRouter();
+  const navigationState = useRootNavigationState()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      if (!navigationState?.key) return;
+
+      try {
+        let session = null;
+
+        if (Platform.OS === 'web') {
+          session = sessionStorage.getItem("userSession");
+        } else {
+          session = await AsyncStorage.getItem("userSession");
+        }
+
+        if (session) {
+
+        } else {
+          router.replace('/MenuNoLog');
+        }
+      } catch (error) {
+        console.error("Error al obtener la sesión:", error);
+        router.replace('/MenuNoLog');
+      }
+    };
+
+    checkSession();
+  }, [navigationState]);
+
   const goBack = () => {
     router.back();
   };

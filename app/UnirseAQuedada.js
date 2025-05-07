@@ -1,50 +1,47 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, Platform} from 'react-native';
-import {router} from "expo-router";
+import {router, useRootNavigationState, useRouter} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 import Globals from "./globals";
+import {useNavigation} from "@react-navigation/native";
 
 export default function UnirseAQuedada({ navigation }){
+    const router = useRouter();
+    const navigationState = useRootNavigationState();
+
     const [invitationCode, setInvitationCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [userId, setUserId] = useState(null);
 
-    if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = await AsyncStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
-                }
-            };
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
 
-            getUserSession();
-        }, []);
-    } else if (Platform.OS === 'web') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = sessionStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
-                }
-            };
+            try {
+                let session = null;
 
-            getUserSession();
-        }, []);
-    }
+                if (Platform.OS === 'web') {
+                    session = sessionStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
+                }
+
+                if (session) {
+
+                } else {
+                    router.replace('/MenuNoLog');
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
+
+        checkSession();
+    }, [navigationState]);
 
     const handleJoinQuedada = async () => {
         setErrorMessage('');

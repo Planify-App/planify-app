@@ -1,54 +1,49 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Image, TouchableOpacity, Platform} from 'react-native';
-import {useNavigation} from "@react-navigation/native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Platform } from 'react-native';
+import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
-import {StatusBar} from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import Globals from "./globals";
+import { useRouter, useRootNavigationState } from "expo-router";
 
 export default function InicioQuedadas(){
     const navigation = useNavigation();
+    const router = useRouter();
+    const navigationState = useRootNavigationState();
+
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userId, setUserId] = useState(null);
 
-    if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = await AsyncStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
+
+            try {
+                let session = null;
+
+                if (Platform.OS === 'web') {
+                    session = sessionStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
                 }
-            };
 
-            getUserSession();
-        }, []);
-    } else if (Platform.OS === 'web') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = sessionStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                } else {
+                    router.replace('/MenuNoLog');
                 }
-            };
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
 
-            getUserSession();
-        }, []);
-    }
-
-
-    //AsyncStorage.clear().then(r => console.log(r));
+        checkSession();
+    }, [navigationState]);
 
     useEffect(() => {
         async function fetchQuedadas() {

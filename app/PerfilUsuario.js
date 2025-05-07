@@ -4,11 +4,16 @@ import { StatusBar } from "expo-status-bar";
 import { Avatar } from "react-native-elements";
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {router} from "expo-router";
+import {router, useRootNavigationState, useRouter} from "expo-router";
 import Constants from "expo-constants";
 import Globals from "./globals";
+import {useNavigation} from "@react-navigation/native";
 
 export default function PerfilUsuario() {
+    const navigation = useNavigation();
+    const router = useRouter();
+    const navigationState = useRootNavigationState();
+
     const [campoAvatar, setAvatar] = useState(require('../assets/profile-photo.jpg'));
     const [campoNombreUsuario, setNombreUsuario] = useState('');
     const [campoCorreo, setCorreo] = useState('');
@@ -21,39 +26,33 @@ export default function PerfilUsuario() {
     const [hayCambios, setHayCambios] = useState(false);
     const [uploadedUrl, setUploadedUrl] = useState("")
 
-    if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = await AsyncStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
-                }
-            };
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
 
-            getUserSession();
-        }, []);
-    } else if (Platform.OS === 'web') {
-        useEffect(() => {
-            const getUserSession = async () => {
-                try {
-                    const session = sessionStorage.getItem("userSession");
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                    }
-                } catch (error) {
-                    console.error("Error al obtener la sesión:", error);
-                }
-            };
+            try {
+                let session = null;
 
-            getUserSession();
-        }, []);
-    }
+                if (Platform.OS === 'web') {
+                    session = sessionStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
+                }
+
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                } else {
+                    router.replace('/MenuNoLog');
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
+
+        checkSession();
+    }, [navigationState]);
 
 
     useEffect(() => {

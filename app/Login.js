@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import {StyleSheet, Text, Alert, TextInput, View, TouchableOpacity, Platform} from 'react-native';
 import "../global.css"
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {Link, router} from "expo-router";
 import Logo from "./Logo";
 import Constants from "expo-constants";
@@ -12,10 +12,42 @@ import CryptoJS from "crypto-js";
 import Globals from "./globals";
 
 export default function Login() {
-    const ip = "localhost"
     const [Auth, setAuth] = useState('');
     const [campoContra, contrasena] = useState('');
     const [secureText, setSecureText] = useState(true);
+
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = await AsyncStorage.getItem("userSession");
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+
+            getUserSession();
+        }, []);
+    } else if (Platform.OS === 'web') {
+
+        useEffect(() => {
+            const getUserSession = async () => {
+                try {
+                    const session = sessionStorage.getItem("userSession");
+
+                    if (session) {
+                        router.replace('/InicioQuedadas');
+                    }
+                } catch (error) {
+                    console.error("Error al obtener la sesión:", error);
+                }
+            };
+            getUserSession();
+        }, []);
+    }
 
     const storeUserSession = async (userData) => {
         if (Platform.OS === 'android' || Platform.OS === 'ios') {
@@ -64,7 +96,8 @@ export default function Login() {
                     refreshTokenUpdated: data.refreshTokenUpdated,
                     userId: data.userId,
                     clavePublica: data.clavePublica,
-                    clavePrivada: clavePrivadaPEM
+                    clavePrivada: clavePrivadaPEM,
+                    isLoged: true
                 };
                 await storeUserSession(userData);
 

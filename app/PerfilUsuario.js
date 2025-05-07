@@ -54,6 +54,16 @@ export default function PerfilUsuario() {
         checkSession();
     }, [navigationState]);
 
+    const maskEmail = (email) => {
+        if (!email.includes('@')) return email;
+
+        const [localPart, domain] = email.split('@');
+        const visibleLength = Math.ceil(localPart.length / 7);
+        const maskedPart = '*'.repeat(localPart.length - visibleLength);
+
+        return `${localPart.slice(0, visibleLength)}${maskedPart}@${domain}`;
+    };
+
 
     useEffect(() => {
         const verificarCambios = () => {
@@ -137,9 +147,6 @@ export default function PerfilUsuario() {
             let response = await fetch(`http://${Globals.ip}:3080/api/upload`, { // Endpoint de tu backend
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
             });
 
             let json = await response.json();
@@ -237,56 +244,61 @@ export default function PerfilUsuario() {
                 </Avatar>
                 <StatusBar style="auto" />
 
-                <Text>Nombre Usuario</Text>
-                <TextInput
-                    className="w-72 lg:w-full bg-white/60"
-                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                    placeholder="NOMBRE USUARIO"
-                    value={campoNombreUsuario}
-                    onChangeText={setNombreUsuario}
-                    editable={modoEdicion}
-                />
+                <View className="w-96">
+                    <Text className="mt-4 font-semibold">Nombre de usuario:</Text>
+                    <TextInput
+                        className="w-72 lg:w-full bg-white/60"
+                        style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                        placeholder="NOMBRE USUARIO"
+                        value={campoNombreUsuario}
+                        onChangeText={setNombreUsuario}
+                        editable={modoEdicion}
+                        disabled={!modoEdicion}
+                    />
 
-                <Text>Correo electrónico</Text>
-                <TextInput
-                    className="w-72 lg:w-full bg-white/60"
-                    style={[styles.input, styles.inputDisabled]}
-                    placeholder="Correo electrónico"
-                    value={campoCorreo}
-                    onChangeText={setCorreo}
-                    editable={false}
-                />
+                    <Text className="mt-4 font-semibold">Correo electrónico:</Text>
+                    <TextInput
+                        className="w-72 lg:w-full select-none bg-white/60"
+                        style={[styles.input, styles.inputDisabled]}
+                        placeholder="Correo electrónico"
+                        value={maskEmail(campoCorreo)}
+                        editable={false}
+                        disabled={true}
+                    />
 
-                <Text>Nombre</Text>
-                <TextInput
-                    className="w-72 lg:w-full bg-white/60"
-                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                    placeholder="Nombre"
-                    value={campoNombre}
-                    onChangeText={setNombre}
-                    editable={modoEdicion}
-                />
+                    <Text className="mt-4 font-semibold">Nombre:</Text>
+                    <TextInput
+                        className="w-72 lg:w-full bg-white/60"
+                        style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                        placeholder="Nombre"
+                        value={campoNombre}
+                        onChangeText={setNombre}
+                        editable={modoEdicion}
+                        disabled={!modoEdicion}
+                    />
 
-                <Text>Apellidos</Text>
-                <TextInput
-                    className="w-72 lg:w-full bg-white/60"
-                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                    placeholder="Apellido"
-                    value={campoApellidos}
-                    onChangeText={setApellido}
-                    editable={modoEdicion}
-                />
+                    <Text className="mt-4 font-semibold">Apellidos:</Text>
+                    <TextInput
+                        className="w-72 lg:w-full bg-white/60"
+                        style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                        placeholder="Apellido"
+                        value={campoApellidos}
+                        onChangeText={setApellido}
+                        editable={modoEdicion}
+                        disabled={!modoEdicion}
+                    />
 
-                <Text>Alérgenos (Opcional)</Text>
-                <TextInput
-                    className="w-72 lg:w-full bg-white/60"
-                    style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
-                    placeholder="Alérgenos"
-                    value={campoAlergenos}
-                    onChangeText={setAlergenos}
-                    editable={modoEdicion}
-                />
-
+                    <Text className="mt-4 font-semibold">Alérgenos (Opcional):</Text>
+                    <TextInput
+                        className="w-72 lg:w-full bg-white/60"
+                        style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
+                        placeholder="Alérgenos"
+                        value={campoAlergenos}
+                        onChangeText={setAlergenos}
+                        editable={modoEdicion}
+                        disabled={!modoEdicion}
+                    />
+                </View>
                 <View style={styles.buttonContainer}>
                     {modoEdicion ? (
                         <>

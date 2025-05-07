@@ -161,7 +161,7 @@ export default function Quedada() {
                     userId: userId
                 }),
             });
-            router.push('/MenuNoLog');
+            router.push('/InicioQuedadas');
         }
     }
 
@@ -235,8 +235,8 @@ export default function Quedada() {
                     <View className="mb-2">
                         <Text className="text-center text-2xl font-semibold">Asistentes</Text>
                         <View className="border-b-2 border-black flex flex-row justify-between">
-                            <Text>Nombre de Usuario</Text>
-                            <Text>Rol</Text>
+                            <Text className="font-bold">Nombre de Usuario</Text>
+                            <Text className="font-bold">Rol</Text>
                         </View>
                         {
                             users && users.length > 0 && (

@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
         let session = null;
 
         if (Platform.OS === 'web') {
-          session = sessionStorage.getItem("userSession");
+          session = localStorage.getItem("userSession");
         } else {
           session = await AsyncStorage.getItem("userSession");
         }

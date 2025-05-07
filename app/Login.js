@@ -36,7 +36,7 @@ export default function Login() {
         useEffect(() => {
             const getUserSession = async () => {
                 try {
-                    const session = sessionStorage.getItem("userSession");
+                    const session = localStorage.getItem("userSession");
 
                     if (session) {
                         router.replace('/InicioQuedadas');
@@ -58,7 +58,7 @@ export default function Login() {
             }
         } else if (Platform.OS === 'web') {
             try {
-                sessionStorage.setItem('userSession', JSON.stringify(userData));
+                localStorage.setItem('userSession', JSON.stringify(userData));
             } catch (error) {
                 console.error('Error al guardar la sesión:', error);
             }

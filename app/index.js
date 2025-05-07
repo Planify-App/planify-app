@@ -25,7 +25,7 @@ export default function Index() {
                useEffect(() => {
                        const checkUserSession = async () => {
                                try {
-                                       const userSession = sessionStorage.getItem('userSession');
+                                       const userSession = localStorage.getItem('userSession');
                                        setIsUserLoggedIn(!!userSession);
                                } catch (error) {
                                        console.error('Error al verificar la sesión del usuario:', error);

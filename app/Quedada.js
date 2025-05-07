@@ -45,7 +45,7 @@ export default function Quedada() {
         useEffect(() => {
             const getUserSession = async () => {
                 try {
-                    const session = sessionStorage.getItem("userSession");
+                    const session = localStorage.getItem("userSession");
                     if (session) {
                         const userData = JSON.parse(session);
                         setUserId(userData.userId);

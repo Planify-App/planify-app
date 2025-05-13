@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput} from 'react-native';
+import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput, Alert} from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -8,20 +8,26 @@ import Constants from "expo-constants";
 import Globals from "./globals";
 import {Checkbox} from "react-native-paper";
 import {Avatar} from "react-native-elements";
+import defaultAvatar from '../assets/profile-photo.jpg';
+import CrownIcon from "./CrownIcon";
+import { Picker } from '@react-native-picker/picker';
 
 export default function Quedada() {
 
     const route = useRoute();
     const { id } = route.params || {};
     const [quedada, setQuedada] = useState(null);
-    const [tickets, setTickets] = useState(null);
-    const [users, setUsers] = useState(null);
+    const [tickets, setTickets] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [roleUpdates, setRoleUpdates] = useState({});
+    const [hasChanges, setHasChanges] = useState(false);
 
     const [visibleEvent, setVisibleEvent] = useState(false);
     const [visibleTicket, setVisibleTicket] = useState(false);
     const [editarQuedada, setEditarQuedada] = useState(false);
+    const [avatarsMap, setAvatarsMap] = useState({});
     const [viewUsuariosQuedada, setViewUsuariosQuedada] = useState(false);
     const [usuarioRol, setUsuarioRol] = useState(null);
     const [userId, setUserId] = useState(null);
@@ -71,24 +77,17 @@ export default function Quedada() {
 
     useEffect(() => {
         const fetchUsuarios = async () => {
-            try {
-                const response = await fetch(`http://${Globals.ip}:3080/api/getUsersFromHangout/${id}`, {
-                    method: "GET",
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                setUsers(data);
-            } catch (err) {
-                setError(err.message);
-            }
+            const resp = await fetch(`http://${Globals.ip}:3080/api/getUsersFromHangout/${id}`);
+            const data = await resp.json();
+            setUsers(data);
+            setRoleUpdates(
+                data.reduce((acc, u) => {
+                    acc[u.idUsuario] = u.rol || 'usuario';
+                    return acc;
+                }, {})
+            );
         };
-
-        if (id) {
-            fetchUsuarios();
-        }
+        if (id) fetchUsuarios();
     }, [id]);
 
     useEffect(() => {
@@ -122,29 +121,27 @@ export default function Quedada() {
         const fetchQuedada = async () => {
             setLoading(true);
             setError(null);
-
             try {
-                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutById`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, hangoutId: id }),
-                    signal,
-                });
-
+                const response = await fetch(
+                    `http://${Globals.ip}:3080/api/getHangoutById`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, hangoutId: id }),
+                        signal,
+                    }
+                );
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                    const errText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errText}`);
                 }
                 const data = await response.json();
-                console.log(data);
                 setQuedada(data[0]);
-            } catch (error) {
-                if (signal.aborted) {
-                    console.log("Fetch aborted");
-                    return;
+            } catch (err) {
+                if (!signal.aborted) {
+                    console.error('Error fetching quedada:', err);
+                    setError('Failed to load quedada. ' + err.message);
                 }
-                console.error('Error fetching quedada:', error);
-                setError("Failed to load quedada data. " + error.message);
             } finally {
                 setLoading(false);
             }
@@ -154,6 +151,45 @@ export default function Quedada() {
 
         return () => controller.abort();
     }, [userId, id]);
+
+    useEffect(() => {
+        if (!users?.length) {
+            console.log("users aún vacío:", users);
+            return;
+        }
+
+        users.forEach(async (user) => {
+            const uid = user.usuario?.id;
+            if (!uid) return;
+
+            try {
+                const res = await fetch(
+                    `http://${Globals.ip}:3080/api/getUserInfo/${uid}`
+                );
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+
+                console.log("CONSULTA: " + data)
+                const avatarUrl =
+                    typeof data.avatar === 'string' && data.avatar.length > 0
+                        ? data.avatar
+                        : defaultAvatar;
+                console.log("AVATAR URL: "+ avatarUrl)
+
+                setAvatarsMap((prev) => ({
+                    ...prev,
+                    [uid]: avatarUrl,
+                }));
+            } catch (err) {
+                console.warn(`No se pudo cargar avatar de ${uid}:`, err);
+                setAvatarsMap((prev) => ({
+                    ...prev,
+                    [uid]: defaultAvatar,
+                }));
+            }
+        });
+    }, [users]);
+
 
     async function salirQuedada() {
         const id_quedada = quedada?.id;
@@ -171,6 +207,22 @@ export default function Quedada() {
             router.push('/InicioQuedadas');
         }
     }
+
+    const changeUserRole = async (userIdToChange, newRole) => {
+        try {
+            await fetch(`http://${Globals.ip}:3080/api/updateUserRole`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hangoutId: id,
+                    userId: userIdToChange,
+                    role: newRole
+                }),
+            });
+        } catch (err) {
+            console.error('Error actualizando rol:', err);
+        }
+    };
 
     if (loading) {
         return (
@@ -308,6 +360,7 @@ export default function Quedada() {
                         setViewUsuariosQuedada(false);
                     }}
                     style={styles.button}
+                    className="text-red-600 font-bold"
                 >
                     Cancelar
                 </Text>
@@ -468,10 +521,98 @@ export default function Quedada() {
 
                     </View>
                 </View>}
-                {viewUsuariosQuedada && <View>
-                    Usuarios quedada
-                </View>}
+                {editarQuedada && viewUsuariosQuedada && (
+                    <View className="w-64 mx-auto">
+                        {(() => {
+                            const organiser = users.find(u => u.rol === 'organizador');
+                            const iAmOrg = userId === organiser?.idUsuario;
 
+                            return (
+                                <>
+                                    {users.map(user => {
+                                            const isUserOrganizer = user.rol === 'organizador';
+                                        const avatarSrc =
+                                            typeof user.usuario.avatar === 'string' && user.usuario.avatar.trim().length > 0
+                                            ? user.usuario.avatar
+                                            : defaultAvatar;
+                                    return (
+                                <View
+                                    key={user.idUsuario}
+                                    className="flex flex-row items-center border-2 border-black/20 rounded-lg py-2 px-4 mt-2"
+                                >
+                                    <Image
+                                        source={{ uri: avatarSrc }}
+                                        style={{
+                                            width: 50,
+                                            height: 50,
+                                            borderRadius: 25,
+                                            marginRight: 16,
+                                        }}
+                                        resizeMode="cover"
+                                    />
+
+                                    <View className="flex-1">
+                                        <Text className="font-bold mb-1">
+                                            {user.usuario.nombre_usuario}
+                                        </Text>
+
+                                        {isUserOrganizer ? (
+                                            <Text className="text-sm text-gray-600 font-semibold">
+                                                Organizador
+                                            </Text>
+                                        ) : (
+                                            <Picker
+                                                selectedValue={roleUpdates[user.idUsuario]}
+                                                onValueChange={val => {
+                                                    setRoleUpdates(prev => ({
+                                                        ...prev,
+                                                        [user.idUsuario]: val
+                                                    }));
+                                                    setHasChanges(true);
+                                                }}
+                                                style={{ height: 40 }}
+                                            >
+                                                <Picker.Item label="Usuario" value="usuario" />
+                                                <Picker.Item label="Colaborador" value="colaborador" />
+                                            </Picker>
+                                        )}
+                                    </View>
+
+                                    {isUserOrganizer && <CrownIcon color="black" />}
+                                </View>
+                                    );
+                                })}
+
+                        {hasChanges && (
+                            <TouchableOpacity
+                                style={styles.saveBtn}
+                                onPress={async () => {
+                                    await Promise.all(
+                                        Object.entries(roleUpdates).map(([uid, role]) => {
+                                            const payload = {
+                                                hangoutId: id,
+                                                userId: uid,
+                                                role: role === 'usuario' ? null : role
+                                            };
+                                            return fetch(`http://${Globals.ip}:3080/api/updateUserRole`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify(payload),
+                                            });
+                                        })
+                                    );
+                                    Alert.alert('Guardado', 'Roles actualizados');
+                                    setHasChanges(false);
+                                }}
+                            >
+                                <Text style={styles.saveText}>Guardar cambios</Text>
+                            </TouchableOpacity>
+                        )}
+                                </>
+                            );
+                        })()}
+                    </View>
+                )}
             </View>}
         </View>
     );
@@ -508,5 +649,16 @@ const styles = StyleSheet.create({
     },
     ticket: {
         flexDirection: "row"
+    },
+    saveBtn: {
+        backgroundColor: '#2C7067',
+        margin: 16,
+        padding: 12,
+        borderRadius: 8,
+    },
+    saveText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: 'bold',
     },
 });

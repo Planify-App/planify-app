@@ -11,6 +11,7 @@ import {Avatar} from "react-native-elements";
 import defaultAvatar from '../assets/profile-photo.jpg';
 import CrownIcon from "./CrownIcon";
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from "expo-image-picker";
 
 export default function Quedada() {
 
@@ -35,6 +36,7 @@ export default function Quedada() {
     const [proximoEventoStatus, setProximoEventoStatus] = useState(true);
     const [asistentesStatus, setAsistentesStatus] = useState(true);
     const [ticketsStatus, setTicketsStatus] = useState(true);
+    const [linkImagen, setLinkImagen] = useState(null);
 
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
         useEffect(() => {
@@ -137,6 +139,7 @@ export default function Quedada() {
                 }
                 const data = await response.json();
                 setQuedada(data[0]);
+                setLinkImagen(data[0].link_imagen);
             } catch (err) {
                 if (!signal.aborted) {
                     console.error('Error fetching quedada:', err);
@@ -159,22 +162,19 @@ export default function Quedada() {
         }
 
         users.forEach(async (user) => {
-            const uid = user.usuario?.id;
-            if (!uid) return;
+            if (!user?.usuario || !user.usuario.id) return;  // Asegúrate de que existe
+
+            const uid = user.usuario.id;
 
             try {
-                const res = await fetch(
-                    `http://${Globals.ip}:3080/api/getUserInfo/${uid}`
-                );
+                const res = await fetch(`http://${Globals.ip}:3080/api/getUserInfo/${uid}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
 
-                console.log("CONSULTA: " + data)
                 const avatarUrl =
                     typeof data.avatar === 'string' && data.avatar.length > 0
                         ? data.avatar
                         : defaultAvatar;
-                console.log("AVATAR URL: "+ avatarUrl)
 
                 setAvatarsMap((prev) => ({
                     ...prev,
@@ -224,6 +224,66 @@ export default function Quedada() {
         }
     };
 
+    //Cargar iamgen
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 4],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            const newUrl = await uploadImage(result.assets[0].uri);
+            if (newUrl) {
+                setLinkImagen(newUrl);
+            }
+        }
+    };
+
+    const uploadImage = async (imageUri) => {
+        let formData = new FormData();
+
+        let file;
+
+        if (Platform.OS === 'web') {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+
+            file = new File([blob], 'foto.jpg', {
+                type: blob.type || 'image/jpeg',
+            });
+        } else {
+            file = {
+                uri: imageUri,
+                name: 'foto.jpg',
+                type: 'image/jpeg',
+            };
+        }
+
+        formData.append('image', file);
+        formData.append('idQuedada', id);
+
+        try {
+            const response = await fetch(`http://${Globals.ip}:3080/api/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const json = await response.json();
+            if (json.url) {
+                console.log('Imagen subida correctamente:', json.url);
+                return json.url;
+            } else {
+                console.error('Error en la respuesta del backend:', json);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error al subir imagen:', error);
+            return null;
+        }
+    };
+
     if (loading) {
         return (
             <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
@@ -249,7 +309,7 @@ export default function Quedada() {
                 {quedada && quedada.link_imagen && (
                     <View className="w-full h-fit">
                         <Image
-                            source={{ uri: quedada.link_imagen }}
+                            source={{ uri: linkImagen }}
                             className="w-full h-32 lg:h-96 mb-5"
                         />
                     </View>
@@ -381,9 +441,13 @@ export default function Quedada() {
                         <Image
                             source={{ uri: quedada.link_imagen }}
                             className="w-full h-32 lg:h-96 mb-5"
+                            onPress={pickImage}
                         />
-                        <Avatar.Accessory size={24} />
+                        <Avatar.Accessory size={24} onPress={pickImage}/>
                     </View>
+                    )}
+                    {quedada && !quedada.link_imagen && (
+                        <Button title={"Poner imagen"} onPress={() => pickImage()} />
                     )}
                     <View style={styles.containerInfoQuedada} className="px-5">
                         <Text>Nombre quedada</Text>

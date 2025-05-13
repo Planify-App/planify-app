@@ -133,7 +133,7 @@ export default function InicioQuedadas(){
         )
     }
     return (
-        <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="flex md:w-full lg:justify-center items-center min-h-screen">
             <StatusBar style="auto" />
             <View className="flex gap-y-4 mb-6">
                 <TouchableOpacity
@@ -153,8 +153,8 @@ export default function InicioQuedadas(){
                     </Text>
                 </TouchableOpacity>
             </View>
-            <View className="max-w-fit">
-                <View className="max-w-fit">
+            <View className="w-full">
+                <View className="max-w-full flex flex-row gap-x-6 items-center">
                     {quedadas.map((quedada) => (
                         <TouchableOpacity
                             key={quedada.id}
@@ -167,7 +167,7 @@ export default function InicioQuedadas(){
                                         <View>
                                             <Image
                                                 source={{ uri: quedada.link_imagen }}
-                                                className="min-w-72 w-full h-32 rounded-t-lg"
+                                                className="min-w-96 w-full h-48 rounded-t-lg"
                                             />
                                         </View>
                                         <View className="flex justify-between flex-row gap-x-6 px-2 py-4">

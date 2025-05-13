@@ -6,9 +6,9 @@ import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import Logo from "../Logo";
 import PinIcon from "../PinIcon";
+import Globals from "../globals";
 
 export default function Chats() {
-    const ip = "192.168.16.112";
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,7 +42,7 @@ export default function Chats() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`http://${ip}:3080/api/getHangoutsUser/${userId}`);
+                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutsUser/${userId}`);
                 if (!response.ok) {
                     const text = await response.text();
                     throw new Error(`HTTP ${response.status}: ${text}`);

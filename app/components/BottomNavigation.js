@@ -12,8 +12,8 @@ export default function BottomNavigation() {
     { label: 'Inicio',  route: '/InicioQuedadas'},
     { label: 'Chats',   route: '/chat/Chats'},
     { label: 'Unirse',  route: '/UnirseAQuedada'},
-    { label: 'Perfil',  route: '/PerfilUsuario'},
     { label: 'Crear Quedada',  route: '/CrearQuedada'},
+    { label: 'Perfil',  route: '/PerfilUsuario'},
   ];
   
   const navigateTo = (screen) => {

@@ -85,7 +85,7 @@ export default function BurgerMenu() {
           >
           <SafeAreaView style={styles.safeArea}>
             <View style={styles.menuHeader}>
-              <Text style={styles.menuTitle}>Menú</Text>
+              <Text style={styles.menuTitle}>Plannify Menú</Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={toggleMenu}
@@ -95,6 +95,13 @@ export default function BurgerMenu() {
             </View>
             
             <View style={styles.menuItems}>
+              <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigateTo('/PerfilUsuario')}
+              >
+                <Ionicons name="person-circle-outline" size={24} color="#444444" />
+                <Text style={styles.menuItemText}>Perfil</Text>
+              </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.menuItem} 
                 onPress={() => navigateTo('/FAQ')}

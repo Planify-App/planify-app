@@ -352,6 +352,13 @@ export default function Quedada() {
                     </View>
                     <Button className="absolute bottom-0" onPress={salirQuedada} title={"Salir de la quedada"} />
                 </View>
+                <TouchableOpacity onPress={() => router.replace(`/chat/Chat?id=${id}`)} style={styles.roundButton}>
+                    <Image
+                        source={require('../assets/icono-chat.png')} // Usa tu imagen
+                        style={styles.roundButtonImage}
+                        resizeMode="contain"
+                    />
+                </TouchableOpacity>
             </View>}
             {editarQuedada && <View style={styles.containerEditarQuedada}>
                 <Text
@@ -660,5 +667,25 @@ const styles = StyleSheet.create({
         color: '#fff',
         textAlign: 'center',
         fontWeight: 'bold',
+    },
+    roundButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+
+    roundButtonImage: {
+        width: 32,
+        height: 32,
+        tintColor: '#fff', // Puedes quitar esto si tu imagen no necesita recolorearse
     },
 });

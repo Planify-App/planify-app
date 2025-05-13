@@ -153,51 +153,51 @@ export default function InicioQuedadas(){
                     </Text>
                 </TouchableOpacity>
             </View>
-            <View className="w-full">
-                <View className="max-w-full flex flex-row gap-x-6 items-center">
-                    {quedadas.map((quedada) => (
-                        <TouchableOpacity
-                            key={quedada.id}
-                            className="lg:hover:scale-[1.01] transition-transform"
-                            onPress={() => navigation.navigate('Quedada', { id: quedada.id })}
-                        >
-                            <View key={quedada.id} className="mb-6">
-                                {quedada.link_imagen !== null ? (
-                                    <View className="border-2 border-black/40 rounded-lg">
-                                        <View>
-                                            <Image
-                                                source={{ uri: quedada.link_imagen }}
-                                                className="min-w-96 w-full h-48 rounded-t-lg"
-                                            />
+            <View className="w-full mx-auto">
+                <View
+                    style={{ width: '100%'}}
+                    className="mx-auto flex-row flex-wrap justify-center gap-6"
+                >
+                    {quedadas.map((q) => {
+                        return (
+                            <TouchableOpacity
+                                key={q.id}
+                                className="w-[75%] max-w-[80%] self-center md:w-1/4 md:mx-0 md:hover:scale-[1.01] transition-transform"
+                                onPress={() => navigation.navigate('Quedada', { id: q.id })}
+                            >
+                                <View className="border-2 min-w-[80%] md:min-w-full min-h-60 border-black/40 rounded-lg overflow-hidden">
+                                    { q.link_imagen ? (
+                                        <Image
+                                            source={{ uri: q.link_imagen }}
+                                            style={{ width: '100%', height: 150 }}
+                                            resizeMode="cover"
+                                        />
+                                    ) : (
+                                        <Image
+                                            source={ require('../assets/default-image.png') }
+                                            style={{ width: '100%', height: 150 }}
+                                            resizeMode="contain"
+                                        />
+                                    )}
+                                    <View className="px-4 py-3 flex-row justify-between">
+                                        <View className="flex-1 pr-2">
+                                            <Text className="font-semibold mb-1">
+                                                {q.nombre_quedada || 'Nombre no disponible'}
+                                            </Text>
+                                            <Text className="text-sm text-black/60">
+                                                {cortarFrase(q.descripcion_quedada)}
+                                            </Text>
                                         </View>
-                                        <View className="flex justify-between flex-row gap-x-6 px-2 py-4">
-                                            <View className="max-w-56">
-                                                <Text className="font-semibold">{quedada.nombre_quedada || "Nombre no disponible"}</Text> {/* Handle missing names */}
-                                                <Text className="text-sm text-balance text-black/60">{cortarFrase(quedada.descripcion_quedada)}</Text>
-                                            </View>
-                                            <View>
-                                                <Text>{quedada.fecha_hora_inicio ? new Date(quedada.fecha_hora_inicio).toLocaleDateString('es-ES') : "Fecha no disponible"}</Text> {/* Format date */}
-                                                {/* Add tiempoRestante logic if needed */}
-                                            </View>
-                                        </View>
+                                        <Text className="text-sm">
+                                            {q.fecha_hora_inicio
+                                                ? new Date(q.fecha_hora_inicio).toLocaleDateString('es-ES')
+                                                : '—'}
+                                        </Text>
                                     </View>
-                                ) : (
-                                    <View className="border-2 border-black/40 rounded-lg px-2 py-4">
-                                        <View className="flex justify-between flex-row gap-x-6">
-                                            <View className="max-w-56">
-                                                <Text className="font-semibold">{quedada.nombre_quedada || "Nombre no disponible"}</Text> {/* Handle missing names */}
-                                                <Text className="text-sm text-balance text-black/60">{cortarFrase(quedada.descripcion_quedada)}</Text>
-                                            </View>
-                                            <View>
-                                                <Text>{quedada.fecha_hora_inicio ? new Date(quedada.fecha_hora_inicio).toLocaleDateString('es-ES') : "Fecha no disponible"}</Text> {/* Format date */}
-                                                {/* Add tiempoRestante logic if needed */}
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-                            </View>
-                        </TouchableOpacity>
-                    ))}
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })}
                 </View>
             </View>
         </View>

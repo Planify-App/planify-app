@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Keyboard, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator, Image } from "react-native";
 import Logo from "../Logo";
-import { useRoute } from "@react-navigation/native";
+import {useNavigation, useRoute} from "@react-navigation/native";
 import Constants from "expo-constants";
 import Svg, { Path } from "react-native-svg";
 import { io } from "socket.io-client";
@@ -9,10 +9,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import forge from "node-forge";
 import Globals from "../globals";
+import {useRootNavigationState, useRouter} from "expo-router";
 
 export default function Chat() {
+    const navigation = useNavigation();
+    const router = useRouter();
     const route = useRoute();
-    console.log("🚩 route.params:", route.params);
+    const navigationState = useRootNavigationState();
 
     const { id } = route.params || {};
     const [quedada, setQuedada] = useState(null);
@@ -34,65 +37,66 @@ export default function Chat() {
     const [publicK, setPublicK] = useState("");
     const [keys, setKeys] = useState([]);
 
-    // Carga de sesión usuario
     useEffect(() => {
-        if (Platform.OS === 'android' || Platform.OS === 'ios') {
-            AsyncStorage.getItem("userSession")
-                .then(session => {
-                    if (session) {
-                        const userData = JSON.parse(session);
-                        setUserId(userData.userId);
-                        setUserName(userData.nombre_usuario);
-                        setPribateK(userData.clavePrivada);
-                        setPublicK(userData.clavePublica);
-                    }
-                })
-                .catch(console.error);
-        } else {
-            const session = localStorage.getItem("userSession");
-            if (session) {
-                const userData = JSON.parse(session);
-                setUserId(userData.userId);
-                setUserName(userData.nombre_usuario);
-                setPribateK(userData.clavePrivada);
-                setPublicK(userData.clavePublica);
-            }
-        }
-    }, []);
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
 
-    // Fetch de datos de quedada
-    useEffect(() => {
-        if (!userId || !id) return;
-        console.log("🚩 fetch params:", userId, id);
+            try {
+                let session = null;
+
+                if (Platform.OS === 'web') {
+                    session = localStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
+                }
+
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                    setUserName(userData.nombre_usuario);
+                    setPribateK(userData.clavePrivada);
+                    setPublicK(userData.clavePublica);
+
+                    if (userData.userId && id) {
+                        await fetchHangoutData(userData.userId, id);
+                    }
+                } else {
+                    router.replace('/MenuNoLog');
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
+
+        checkSession();
+    }, [navigationState?.key, id]);
+
+    const fetchHangoutData = async (userId, id) => {
         const controller = new AbortController();
         const signal = controller.signal;
 
-        (async () => {
-            try {
-                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutById`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, hangoutId: id }),
-                    signal,
-                });
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${errorText}`);
-                }
-                const data = await response.json();
-                console.log("🚩 fetchQuedada data:", data);
-                setQuedada(Array.isArray(data) ? data[0] : data);
-            } catch (error) {
-                if (signal.aborted) {
-                    console.log("Fetch aborted");
-                } else {
-                    console.error('Error fetching quedada:', error);
-                }
+        try {
+            const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutById`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, hangoutId: id }),
+                signal,
+            });
+            if (!response.ok) {
+                router.replace('/chat/Chats');
             }
-        })();
-
-        return () => controller.abort();
-    }, [userId, id]);
+            const data = await response.json();
+            console.log("🚩 fetchQuedada data:", data);
+            setQuedada(Array.isArray(data) ? data[0] : data);
+        } catch (error) {
+            if (signal.aborted) {
+                console.log("Fetch aborted");
+            } else {
+                console.error('Error fetching quedada:', error);
+            }
+        }
+    };
 
     // Conexión Socket.IO
     useEffect(() => {
@@ -193,7 +197,7 @@ export default function Chat() {
 
     const desencriptarMensaje = (mensaje) => {
         try {
-            setMessages([]);
+            const nuevosMensajes = [];
             for (const ts of Object.keys(mensaje)) {
                 const mObj = mensaje[ts];
                 const encryptedAESKey = mObj.mensaje.encryptedAESKey?.[userId];
@@ -206,13 +210,18 @@ export default function Chat() {
                 dec.update(forge.util.createBuffer(forge.util.decode64(mObj.mensaje.message)));
                 if (!dec.finish()) continue;
                 const texto = dec.output.toString();
-                setMessages(prev => [...prev, {
+
+                // Acumulamos los mensajes de manera local
+                nuevosMensajes.push({
                     usuario: mObj.usuario,
                     idUsuario: mObj.idUser,
                     mensaje: texto,
                     tiempo: mObj.tiempo
-                }]);
+                });
             }
+
+            // Actualizamos el estado de mensajes solo una vez
+            setMessages(prev => [...prev, ...nuevosMensajes]);
         } catch (error) {
             console.error("Error desencriptando:", error);
         }

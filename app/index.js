@@ -1,46 +1,42 @@
-import MenuNoLog from "./MenuNoLog";
-import InicioQuedadas from "./InicioQuedadas";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useEffect, useState} from "react";
-import {Platform} from "react-native";
+import { useEffect } from "react";
+import { View, ActivityIndicator, Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRootNavigationState, router } from "expo-router";
 
 export default function Index() {
-        const [isUserLoggedIn, setIsUserLoggedIn] = useState(null);
+        const navigationState = useRootNavigationState();
 
-       if(Platform.OS === 'android' || Platform.OS === 'ios') {
-               useEffect(() => {
-                       const checkUserSession = async () => {
-                               try {
-                                       const userSession = await AsyncStorage.getItem('userSession');
-                                       setIsUserLoggedIn(!!userSession);
-                               } catch (error) {
-                                       console.error('Error al verificar la sesión del usuario:', error);
-                                       setIsUserLoggedIn(false);
-                               }
-                       };
+        useEffect(() => {
+                const checkUserSession = async () => {
+                        try {
+                                let userSession = null;
 
-                       checkUserSession();
-               }, []);
-       } else if(Platform.OS === 'web') {
-               useEffect(() => {
-                       const checkUserSession = async () => {
-                               try {
-                                       const userSession = localStorage.getItem('userSession');
-                                       setIsUserLoggedIn(!!userSession);
-                               } catch (error) {
-                                       console.error('Error al verificar la sesión del usuario:', error);
-                                       setIsUserLoggedIn(false);
-                               }
-                       };
+                                if (Platform.OS === 'web') {
+                                        userSession = localStorage.getItem('userSession');
+                                } else {
+                                        userSession = await AsyncStorage.getItem('userSession');
+                                }
 
-                       checkUserSession();
-               }, []);
-       }
+                                if (userSession) {
+                                        router.replace('/InicioQuedadas');
+                                } else {
+                                        router.replace('/MenuNoLog');
+                                }
 
+                        } catch (error) {
+                                console.error('Error al verificar la sesión del usuario:', error);
+                                router.replace('/MenuNoLog');
+                        }
+                };
 
-        if (isUserLoggedIn === null) {
-                return null;
-        }
+                if (navigationState?.key) {
+                        checkUserSession();
+                }
+        }, [navigationState]);
 
-        return isUserLoggedIn ? <InicioQuedadas /> : <MenuNoLog />;
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#297169" />
+            </View>
+        );
 }

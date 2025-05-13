@@ -226,7 +226,7 @@ export default function PerfilUsuario() {
                 console.log(errorData);
                 Alert.alert('Error', errorData.message || 'Error al guardar la información del usuario');
             }
-            router.push('/MenuNoLog');
+            router.push('/PerfilUsuario');
         } catch (error) {
             console.error("Error al guardar la información del usuario:", error);
         }

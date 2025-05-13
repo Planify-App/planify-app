@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform} from 'react-native';
+import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput} from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {StatusBar} from "expo-status-bar";
 import Constants from "expo-constants";
 import Globals from "./globals";
+import {Checkbox} from "react-native-paper";
+import {Avatar} from "react-native-elements";
 
 export default function Quedada() {
 
@@ -20,8 +22,13 @@ export default function Quedada() {
     const [visibleEvent, setVisibleEvent] = useState(false);
     const [visibleTicket, setVisibleTicket] = useState(false);
     const [editarQuedada, setEditarQuedada] = useState(false);
+    const [viewUsuariosQuedada, setViewUsuariosQuedada] = useState(false);
     const [usuarioRol, setUsuarioRol] = useState(null);
     const [userId, setUserId] = useState(null);
+
+    const [proximoEventoStatus, setProximoEventoStatus] = useState(true);
+    const [asistentesStatus, setAsistentesStatus] = useState(true);
+    const [ticketsStatus, setTicketsStatus] = useState(true);
 
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
         useEffect(() => {
@@ -295,7 +302,176 @@ export default function Quedada() {
                 </View>
             </View>}
             {editarQuedada && <View style={styles.containerEditarQuedada}>
-                <Text onPress={() => setEditarQuedada(false)} style={styles.button}>Cancelar</Text>
+                <Text
+                    onPress={() => {
+                        setEditarQuedada(false);
+                        setViewUsuariosQuedada(false);
+                    }}
+                    style={styles.button}
+                >
+                    Cancelar
+                </Text>
+
+                <Button title={"Editar quedada"} onPress={() => setViewUsuariosQuedada(false)} />
+                <Button title={"Usuarios quedada"} onPress={() => setViewUsuariosQuedada(true)} />
+
+                {!viewUsuariosQuedada && <View>
+                    {quedada && quedada.link_imagen && (
+                    <View className="w-full h-fit">
+                        <Image
+                            source={{ uri: quedada.link_imagen }}
+                            className="w-full h-32 lg:h-96 mb-5"
+                        />
+                        <Avatar.Accessory size={24} />
+                    </View>
+                    )}
+                    <View style={styles.containerInfoQuedada} className="px-5">
+                        <Text>Nombre quedada</Text>
+                        <View className="flex flex-row gap-x-2 items-end justify-between">
+                            <TextInput
+                                className="w-72 lg:w-full bg-white/60"
+                                style={[styles.inputEditable]}
+                                placeholder="NOMBRE USUARIO"
+                                value={quedada.nombre_quedada}
+                                //onChangeText={}
+
+                            />
+                        </View>
+                        <View style={styles.containerDescripcio}>
+
+                            <Text>Descripcion</Text>
+                            <View className="flex flex-row gap-x-2 items-end justify-between">
+                                <TextInput
+                                    className="w-72 lg:w-full bg-white/60"
+                                    style={[styles.inputEditable]}
+                                    placeholder="NOMBRE USUARIO"
+                                    value={quedada.descripcion_quedada}
+                                    //onChangeText={}
+
+                                />
+                            </View>
+                        </View>
+                        <Checkbox.Item
+                            label="Próximo Evento"
+                            status={proximoEventoStatus ? 'checked' : 'unchecked'}
+                            onPress={() => setProximoEventoStatus(!proximoEventoStatus)}
+                            title="Próximo Evento"
+                        />
+                        {proximoEventoStatus && (
+                            <View style={styles.containerProximoEvento}>
+                                <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
+                                    <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
+                                        <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
+                                        <Text style={styles.buttonText} className="text-white">{visibleEvent ? "⬆" : "⬇"}</Text>
+                                    </View>
+                                </TouchableOpacity>
+
+                                {visibleEvent && (
+                                    <View className="px-4 py-2 bg-blue-300 rounded-b-lg">
+                                        <View style={styles.InfoEvento}>
+                                            <Text className="text-black">Evento</Text>
+                                        </View>
+                                        <View style={styles.MapaEvento}>
+                                            <Text>Mapa</Text>
+                                        </View>
+                                    </View>
+                                )}
+                            </View>
+                        )}
+
+                        <View style={styles.containerCalendario7dias}>
+                            <Text>Calendario 7 dias</Text>
+                            <View style={styles.tabla}>
+                                {["Col 1", "Col 2", "Col 3", "Col 4", "Col 5", "Col 6", "Col 7"].map((item, index) => (
+                                    <View key={index} style={styles.cell}>
+                                        <Text style={styles.text}>{item}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+
+                        <Checkbox.Item
+                            label="Asistentes"
+                            status={asistentesStatus ? 'checked' : 'unchecked'}
+                            onPress={() => setAsistentesStatus(!asistentesStatus)}
+                            title="Asistentes"
+                        />
+                        {asistentesStatus && (
+                            <View className="mb-2">
+                                <Text className="text-center text-2xl font-semibold">Asistentes</Text>
+                                <View className="border-b-2 border-black flex flex-row justify-between">
+                                    <Text className="font-bold">Nombre de Usuario</Text>
+                                    <Text className="font-bold">Rol</Text>
+                                </View>
+                                {
+                                    users && users.length > 0 && (
+                                        <View>
+                                            {users.map((user) => (
+                                                <View key={user.id} className="flex flex-row justify-between items-center">
+                                                    <Text>{user.usuario.nombre_usuario}</Text>
+                                                    <Text>
+                                                        {(() => {
+                                                            switch (user.rol) {
+                                                                case "organizador":
+                                                                    return "Organizador";
+                                                                case "colaborador":
+                                                                    return "Colaborador";
+                                                                default:
+                                                                    return "Usuario";
+                                                            }
+                                                        })()}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                        </View>
+                                    )
+                                }
+                            </View>
+                        )}
+
+                        <Checkbox.Item
+                            label="Tikets"
+                            status={ticketsStatus ? 'checked' : 'unchecked'}
+                            onPress={() => setTicketsStatus(!ticketsStatus)}
+                            title="Tikets"
+                        />
+                        {ticketsStatus && (
+                            <View style={styles.containerTickets}>
+                                {tickets && tickets.length > 0 && (
+                                    <TouchableOpacity
+                                        onPress={() => setVisibleTicket(!visibleTicket)}
+                                        style={styles.button}
+                                        className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
+                                    >
+                                        <Text style={styles.buttonText} className="text-white">Tickets</Text>
+                                        <Text style={styles.buttonText} className="text-white">
+                                            {visibleTicket ? "⬆" : "⬇"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+
+                                {visibleTicket && tickets && tickets.length > 0 && (
+                                    <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
+                                        {tickets.map((ticket) => (
+                                            <View key={ticket.id} className="flex flex-row justify-between items-center">
+                                                <Text className="text-white">{ticket.nombre}</Text>
+                                                <Text className="text-white">{ticket.precio}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+                        )}
+
+                        <Button className="absolute bottom-0" /* onPress={salirQuedada}*/  title={"Aplicar cambios"} />
+
+
+                    </View>
+                </View>}
+                {viewUsuariosQuedada && <View>
+                    Usuarios quedada
+                </View>}
+
             </View>}
         </View>
     );

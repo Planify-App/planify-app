@@ -73,12 +73,16 @@ export default function BurgerMenu() {
       )}
 
       {menuVisible && (
-        <Animated.View 
-          style={[
-            styles.menuContainer, 
-            { right: slideAnim }
-          ]}
-        >
+          <Animated.View
+              style={[
+                styles.menuContainer,
+                { transform: [{ translateX: slideAnim.interpolate({
+                      inputRange: [0, screenWidth],
+                      outputRange: [0, screenWidth]
+                    }) }]
+                }
+              ]}
+          >
           <SafeAreaView style={styles.safeArea}>
             <View style={styles.menuHeader}>
               <Text style={styles.menuTitle}>Menú</Text>
@@ -154,6 +158,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     bottom: 0,
+    right: 0,
     width: 280,
     backgroundColor: '#ffffff',
     zIndex: 9999,

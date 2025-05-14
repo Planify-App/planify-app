@@ -73,7 +73,7 @@ export default function ChatIa() {
         };
 
         checkSession();
-    }, [navigationState]);
+    }, [navigationState?.key]);
 
     // Función recursiva para renderizar mapas anidados
     const renderNestedData = (data, keyPrefix = '') => {

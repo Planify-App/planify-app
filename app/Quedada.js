@@ -15,6 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import CrearEvento from "./CrearEvento";
 import {Feather} from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import EditarQuedada from "./components/EditarQuedada";
 
 export default function Quedada() {
 
@@ -54,6 +55,8 @@ export default function Quedada() {
     const [endTime, setEndTime] = useState(new Date(new Date().setHours(23, 59)));
     const [eventos, setEventos] = useState([]);
     const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
+    const [showEditarModal, setShowEditarModal] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
 
     useEffect(() => {
@@ -390,7 +393,7 @@ export default function Quedada() {
             window.alert(`${title}\n\n${message}`);
         } else {
             // En móvil usamos el componente Alert de React Native
-            Alert.alert(title, message);
+            alert(title, message);
         }
     };
 
@@ -503,14 +506,47 @@ export default function Quedada() {
                                     <Text style={{ marginTop: 2 }}>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
                                     <Text style={{ marginTop: 6 }}>📋 Descripción: {eventoSeleccionado.descripcion_evento}</Text>
 
+                                    {/* Botón: Cerrar detalle */}
                                     <TouchableOpacity
                                         onPress={() => setEventoSeleccionado(null)}
                                         style={{ marginTop: 12, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
                                     >
                                         <Text style={{ color: 'white', textAlign: 'center' }}>Cerrar detalle</Text>
                                     </TouchableOpacity>
+
+                                    {/* Botón: Editar */}
+                                    <TouchableOpacity
+                                        onPress={() => setShowEditarModal(true)}
+                                        style={{ marginTop: 8, backgroundColor: '#10B981', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Editar evento</Text>
+                                    </TouchableOpacity>
+
+                                    {/* Botón: Eliminar */}
+                                    <TouchableOpacity
+                                        onPress={() => setShowConfirmModal(true)}
+                                        style={{ marginTop: 8, backgroundColor: '#EF4444', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Eliminar evento</Text>
+                                    </TouchableOpacity>
                                 </View>
                             )}
+
+                            {/* Modal: Editar evento */}
+                            <Modal
+                                visible={showEditarModal}
+                                animationType="slide"
+                                onRequestClose={() => setShowEditarModal(false)}
+                            >
+                                <View style={{ flex: 1, padding: 16 }}>
+                                    <EditarQuedada
+                                        evento={eventoSeleccionado}
+                                        onClose={() => setShowEditarModal(false)}
+                                    />
+                                </View>
+                            </Modal>
+
+
                         </View>
                     </View>
 
@@ -980,7 +1016,7 @@ export default function Quedada() {
                                             });
                                         })
                                     );
-                                    Alert.alert('Guardado', 'Roles actualizados');
+                                    alert('Guardado', 'Roles actualizados');
                                     setHasChanges(false);
                                 }}
                             >
@@ -1009,7 +1045,73 @@ export default function Quedada() {
                         <Text>Cancelar</Text></TouchableOpacity>
                 </View>
             </Modal>
+            <Modal
+                visible={showConfirmModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowConfirmModal(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <View style={{
+                        width: '80%',
+                        backgroundColor: 'white',
+                        padding: 20,
+                        borderRadius: 10,
+                        elevation: 5
+                    }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>¿Eliminar evento?</Text>
+                        <Text style={{ marginBottom: 20 }}>
+                            Esta acción eliminará el evento y todos sus pagos asociados. ¿Estás seguro de que deseas continuar?
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                            <TouchableOpacity
+                                onPress={() => setShowConfirmModal(false)}
+                                style={{ marginRight: 10 }}
+                            >
+                                <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>Cancelar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    try {
+                                        const response = await fetch(`http://${Globals.ip}:3080/api/deleteEvent`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ id_evento: eventoSeleccionado.id_evento }),
+                                        });
+
+                                        if (!response.ok) throw new Error('Error al eliminar evento');
+
+                                        const result = await response.json();
+                                        if (result === true) {
+                                            setEventoSeleccionado(null);
+                                            window.location.reload();
+                                        } else {
+                                            Alert.alert("Error", "No se pudo eliminar el evento.");
+                                        }
+
+                                    } catch (error) {
+                                        console.error("Error al eliminar el evento:", error);
+                                        Alert.alert("Error", "Ocurrió un error al eliminar el evento.");
+                                    }
+                                    setShowConfirmModal(false);
+                                }}
+                            >
+                                <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Eliminar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
         </View>
+
     );
 }
 

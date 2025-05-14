@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Platform } from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Platform, ToastAndroid} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Globals from "./globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as navigation from "expo-router/build/global-state/routing";
 
 const CrearEvento = ({ idQuedada }) => {
     const [pagos, setPagos] = useState(false);
@@ -96,7 +97,6 @@ const CrearEvento = ({ idQuedada }) => {
     };
 
     const handleGuardarEvento = () => {
-        // Preparar datos base del evento
         const eventoData = {
             id_quedada: idQuedada,
             nombre_evento: nombreEvento,
@@ -105,14 +105,12 @@ const CrearEvento = ({ idQuedada }) => {
             lugar_evento: lugar,
         };
 
-        // Si hay pagos, agregamos info de pagos
         if (pagos) {
             const pagos_usuario = users.map(user => ({
                 usuario: user.id,
                 cantidad: user.cantidad || '0'
             }));
 
-            // Validación: si tipoPago === 'Repartir', la suma no puede superar el total
             if (tipoPago === 'Repartir') {
                 const suma = pagos_usuario.reduce((acc, u) => acc + parseFloat(u.cantidad || 0), 0);
                 if (suma > parseFloat(cantidad)) {
@@ -121,17 +119,12 @@ const CrearEvento = ({ idQuedada }) => {
                 }
             }
 
-            // Agregamos los datos de pagos al objeto final
             eventoData.mostrar_pagos = true;
             eventoData.precio_total = cantidad;
             eventoData.tipo_pago = tipoPago;
             eventoData.pagos_usuario = pagos_usuario;
         }
 
-        // Log para debug
-        console.log("Datos que se enviarán:", eventoData);
-
-        // Petición al backend
         fetch(`http://${Globals.ip}:3080/api/createEvent`, {
             method: 'POST',
             headers: {
@@ -143,14 +136,15 @@ const CrearEvento = ({ idQuedada }) => {
                 if (!response.ok) throw new Error('Error al guardar el evento');
                 return response.json();
             })
-            .then(data => {
-                console.log('Evento guardado correctamente:', data);
-                // Aquí podrías limpiar formulario o redirigir
-            })
+            .then(
+                window.location.reload()
+            )
             .catch(err => {
                 console.error('Error al guardar el evento:', err);
+                ToastAndroid.show("❌ Error al guardar el evento", ToastAndroid.LONG);
             });
     };
+
 
 
     return (

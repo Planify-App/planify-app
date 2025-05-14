@@ -13,7 +13,6 @@ export default function BottomNavigation() {
     { label: 'Chats',   route: '/chat/Chats'},
     { label: 'Unirse',  route: '/UnirseAQuedada'},
     { label: 'Crear Quedada',  route: '/CrearQuedada'},
-    { label: 'Perfil',  route: '/PerfilUsuario'},
   ];
   
   const navigateTo = (screen) => {

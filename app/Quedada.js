@@ -184,14 +184,14 @@ export default function Quedada() {
                 setLinkImagen(data[0].link_imagen);
                 setNombreQuedada(data[0].nombre_quedada);
                 setDescripcionQuedada(data[0].descripcion_quedada);
-                setIsMultiDay(data[0].mas_de_un_dia);
+                setIsMultiDay(!!data[0].mas_de_un_dia);
                 setStartDate(new Date(data[0].fecha_hora_inicio));
                 setStartTime(new Date(data[0].fecha_hora_inicio));
                 setEndDate(new Date(data[0].fecha_hora_final));
                 setEndTime(new Date(data[0].fecha_hora_final));
-                setProximoEventoStatus(data[0].mostrar_proximos_eventos);
-                setTicketsStatus(data[0].mostrar_tickets);
-                setAsistentesStatus(data[0].mostrar_asistentes);
+                setProximoEventoStatus(!!data[0].mostrar_proximos_eventos);
+                setTicketsStatus(!!data[0].mostrar_tickets);
+                setAsistentesStatus(!!data[0].mostrar_asistentes);
 
             } catch (err) {
                 if (!signal.aborted) {
@@ -340,14 +340,14 @@ export default function Quedada() {
     const cancelar = async () => {
         setNombreQuedada(quedada.nombre_quedada);
         setDescripcionQuedada(quedada.descripcion_quedada);
-        setIsMultiDay(quedada.mas_de_un_dia);
+        setIsMultiDay(!!quedada.mas_de_un_dia);
         setStartDate(new Date(quedada.fecha_hora_inicio));
         setEndDate(new Date(quedada.fecha_hora_final));
         setStartTime(new Date(quedada.fecha_hora_inicio));
         setEndTime(new Date(quedada.fecha_hora_final));
-        setProximoEventoStatus(quedada.mostrar_proximos_eventos);
-        setTicketsStatus(quedada.mostrar_tickets);
-        setAsistentesStatus(quedada.mostrar_asistentes);
+        setProximoEventoStatus(!!quedada.mostrar_proximos_eventos);
+        setTicketsStatus(!!quedada.mostrar_tickets);
+        setAsistentesStatus(!!quedada.mostrar_asistentes);
     };
 
     const guardar = async () => {

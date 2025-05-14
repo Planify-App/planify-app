@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput, Alert, Modal} from 'react-native';
-import { useRoute } from "@react-navigation/native";
+import React, {useEffect, useState} from 'react';
+import {Alert, Button, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {useRoute} from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {StatusBar} from "expo-status-bar";
@@ -10,9 +10,12 @@ import {Checkbox} from "react-native-paper";
 import {Avatar} from "react-native-elements";
 import defaultAvatar from '../assets/profile-photo.jpg';
 import CrownIcon from "./CrownIcon";
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 import * as ImagePicker from "expo-image-picker";
 import CrearEvento from "./CrearEvento";
+import {Feather} from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import EditarQuedada from "./components/EditarQuedada";
 
 export default function Quedada() {
 
@@ -41,6 +44,46 @@ export default function Quedada() {
     const [ticketsStatus, setTicketsStatus] = useState(true);
     const [linkImagen, setLinkImagen] = useState(null);
 
+    const [nombreQuedada, setNombreQuedada] = useState('');
+    const [descripcionQuedada, setDescripcionQuedada] = useState('');
+    const [isMultiDay, setIsMultiDay] = useState(false);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+    const [startDate, setStartDate] = useState(new Date());
+    const [startTime, setStartTime] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
+    const [endTime, setEndTime] = useState(new Date(new Date().setHours(23, 59)));
+    const [eventos, setEventos] = useState([]);
+    const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
+    const [showEditarModal, setShowEditarModal] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+
+    useEffect(() => {
+        if (eventoSeleccionado) {
+            setVisibleEvent(false); // Oculta el menú de eventos cuando se selecciona uno
+        }
+    }, [eventoSeleccionado]);
+    useEffect(() => {
+        if (visibleEvent) {
+            setEventoSeleccionado(null); // Cierra el detalle del evento si se abre el menú
+        }
+    }, [visibleEvent]);
+
+    useEffect(() => {
+        const cargarEventos = async () => {
+            try {
+                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutEvents/${id}`);
+                const data = await response.json();
+                setEventos(data || []);
+                console.log(data)
+            } catch (err) {
+                console.error('Error al cargar eventos:', err);
+            }
+        };
+
+        if (id) cargarEventos();
+    }, [id]);
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
         useEffect(() => {
             const getUserSession = async () => {
@@ -142,6 +185,17 @@ export default function Quedada() {
                 const data = await response.json();
                 setQuedada(data[0]);
                 setLinkImagen(data[0].link_imagen);
+                setNombreQuedada(data[0].nombre_quedada);
+                setDescripcionQuedada(data[0].descripcion_quedada);
+                setIsMultiDay(!!data[0].mas_de_un_dia);
+                setStartDate(new Date(data[0].fecha_hora_inicio));
+                setStartTime(new Date(data[0].fecha_hora_inicio));
+                setEndDate(new Date(data[0].fecha_hora_final));
+                setEndTime(new Date(data[0].fecha_hora_final));
+                setProximoEventoStatus(!!data[0].mostrar_proximos_eventos);
+                setTicketsStatus(!!data[0].mostrar_tickets);
+                setAsistentesStatus(!!data[0].mostrar_asistentes);
+
             } catch (err) {
                 if (!signal.aborted) {
                     console.error('Error fetching quedada:', err);
@@ -286,6 +340,77 @@ export default function Quedada() {
         }
     };
 
+    const cancelar = async () => {
+        setNombreQuedada(quedada.nombre_quedada);
+        setDescripcionQuedada(quedada.descripcion_quedada);
+        setIsMultiDay(!!quedada.mas_de_un_dia);
+        setStartDate(new Date(quedada.fecha_hora_inicio));
+        setEndDate(new Date(quedada.fecha_hora_final));
+        setStartTime(new Date(quedada.fecha_hora_inicio));
+        setEndTime(new Date(quedada.fecha_hora_final));
+        setProximoEventoStatus(!!quedada.mostrar_proximos_eventos);
+        setTicketsStatus(!!quedada.mostrar_tickets);
+        setAsistentesStatus(!!quedada.mostrar_asistentes);
+    };
+
+    const guardar = async () => {
+
+        const data = {
+            id_quedada: id,
+            nombre_quedada: nombreQuedada,
+            descripcion_quedada: descripcionQuedada,
+            fecha_hora_inicio: formatDateTime(startDate, startTime),
+            mas_de_un_dia: isMultiDay,
+            fecha_hora_final: formatDateTime(endDate, endTime),
+            mostrar_proximos_eventos: proximoEventoStatus,
+            mostrar_asistentes: asistentesStatus,
+            mostrar_tickets: ticketsStatus,
+        };
+
+        console.log(data);
+        try {
+            const response = await fetch(`http://${Globals.ip}:3080/api/editHangout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            showAlert("Éxito", "La quedada se ha guardado correctamente.");
+            setEditarQuedada(false);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+    const showAlert = (title, message) => {
+        if (Platform.OS === 'web') {
+            // En web usamos el alert nativo del navegador
+            window.alert(`${title}\n\n${message}`);
+        } else {
+            // En móvil usamos el componente Alert de React Native
+            alert(title, message);
+        }
+    };
+
+    const formatDateTime = (date, time) => {
+        const d = new Date(date);
+        d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    };
+
+    const getDiastotales = () => {
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const diffInMs = endDate.getTime() - startDate.getTime();
+        return Math.floor(diffInMs / msPerDay) + 1;
+    };
+
+
     if (loading) {
         return (
             <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
@@ -318,103 +443,172 @@ export default function Quedada() {
                 )}
                 <View style={styles.containerInfoQuedada} className="px-5">
                     <View className="flex flex-row gap-x-2 items-end justify-between">
-                        <Text className="font-bold text-4xl text-gray-700">{quedada.nombre_quedada}</Text>
+                        <Text className="font-bold text-4xl text-gray-700">{nombreQuedada}</Text>
                         <Text className="text-xs text-blue-400 font-semibold pb-1" onPress={() => setEditarQuedada(true)}>Editar</Text>
                     </View>
                     <View style={styles.containerDescripcio}>
-                        <Text style={styles.descripcion}>{quedada.descripcion_quedada}</Text>
+                        <Text style={styles.descripcion}>{descripcionQuedada}</Text>
                     </View>
 
-                    {/* Botón para crear evento */}
+                    {isMultiDay && (
+                        <View className="flex flex-row gap-x-2 items-center">
+                            <Text className="text-xs text-gray-500">La quedada dura mas de un día</Text>
+                            <Text>La qudada empieza el {formatDateTime(startDate, startTime)}</Text>
+                            <Text>La quedada durará {getDiastotales()} días</Text>
+                            <Text>La qudada termina el {formatDateTime(endDate, endTime)}</Text>
+                        </View>
+                    )}
+                    {!isMultiDay && (
+                        <View className="flex flex-row gap-x-2 items-center">
+                            <Text className="text-xs text-gray-500">La quedada solo dura un día</Text>
+                            <Text>La qudada empieza el {formatDateTime(startDate, startTime)}</Text>
+                        </View>
+                    )}
+
                     <TouchableOpacity style={styles.botonCrearEvento}
                         onPress={() => setShowEventModal(true)}>
                      <Text style={styles.botonTexto}>Crear evento</Text>
                     </TouchableOpacity>
 
                     <View >
-                        <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
-                            <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
-                                <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
-                                <Text style={styles.buttonText} className="text-white">{visibleEvent ? "⬆" : "⬇"}</Text>
-                            </View>
-                        </TouchableOpacity>
+                        <View style={{ marginBottom: 20 }}>
+                            <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
+                                <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
+                                    <Text style={styles.buttonText}>Próximos Eventos</Text>
+                                    <Text style={styles.buttonText} className="text-white">{visibleEvent ? '⬆' : '⬇'}</Text>
+                                </View>
+                            </TouchableOpacity>
 
-                        {visibleEvent && (
-                            <View className="px-4 py-2 bg-blue-300 rounded-b-lg">
-                                <View style={styles.InfoEvento}>
-                                    <Text className="text-black">Evento</Text>
+                            {visibleEvent && (
+                                <View style={{ backgroundColor: '#93C5FD', padding: 10, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
+                                    {eventos.length > 0 ? (
+                                        eventos.map((evento) => (
+                                            <TouchableOpacity
+                                                key={evento.id}
+                                                onPress={() => setEventoSeleccionado(evento)}
+                                                style={{ backgroundColor: 'white', padding: 10, borderRadius: 8, marginBottom: 8 }}
+                                            >
+                                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{evento.nombre_evento}</Text>
+                                                <Text>{evento.lugar_evento}</Text>
+                                            </TouchableOpacity>
+                                        ))
+                                    ) : (
+                                        <Text style={{ color: 'white' }}>No hay eventos disponibles.</Text>
+                                    )}
                                 </View>
-                                <View style={styles.MapaEvento}>
-                                    <Text>Mapa</Text>
+                            )}
+
+                            {/* Detalle del evento seleccionado */}
+                            {eventoSeleccionado && (
+                                <View style={{ backgroundColor: '#F3F4F6', padding: 16, borderRadius: 10, marginTop: 10 }}>
+                                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{eventoSeleccionado.nombre_evento}</Text>
+                                    <Text style={{ marginTop: 4 }}>📍 Lugar: {eventoSeleccionado.lugar_evento}</Text>
+                                    <Text style={{ marginTop: 2 }}>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
+                                    <Text style={{ marginTop: 6 }}>📋 Descripción: {eventoSeleccionado.descripcion_evento}</Text>
+
+                                    {/* Botón: Cerrar detalle */}
+                                    <TouchableOpacity
+                                        onPress={() => setEventoSeleccionado(null)}
+                                        style={{ marginTop: 12, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Cerrar detalle</Text>
+                                    </TouchableOpacity>
+
+                                    {/* Botón: Editar */}
+                                    <TouchableOpacity
+                                        onPress={() => setShowEditarModal(true)}
+                                        style={{ marginTop: 8, backgroundColor: '#10B981', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Editar evento</Text>
+                                    </TouchableOpacity>
+
+                                    {/* Botón: Eliminar */}
+                                    <TouchableOpacity
+                                        onPress={() => setShowConfirmModal(true)}
+                                        style={{ marginTop: 8, backgroundColor: '#EF4444', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Eliminar evento</Text>
+                                    </TouchableOpacity>
                                 </View>
+                            )}
+
+                            {/* Modal: Editar evento */}
+                            <Modal
+                                visible={showEditarModal}
+                                animationType="slide"
+                                onRequestClose={() => setShowEditarModal(false)}
+                            >
+                                <View style={{ flex: 1, padding: 16 }}>
+                                    <EditarQuedada
+                                        evento={eventoSeleccionado}
+                                        onClose={() => setShowEditarModal(false)}
+                                    />
+                                </View>
+                            </Modal>
+
+
+                        </View>
+                    </View>
+
+                    {asistentesStatus && (
+                        <View className="mb-2">
+                            <Text className="text-center text-2xl font-semibold">Asistentes</Text>
+                            <View className="border-b-2 border-black flex flex-row justify-between">
+                                <Text className="font-bold">Nombre de Usuario</Text>
+                                <Text className="font-bold">Rol</Text>
                             </View>
-                        )}
-                    </View>
-                    <View style={styles.containerCalendario7dias}>
-                        <Text>Calendario 7 dias</Text>
-                        <View style={styles.tabla}>
-                            {["Col 1", "Col 2", "Col 3", "Col 4", "Col 5", "Col 6", "Col 7"].map((item, index) => (
-                                <View key={index} style={styles.cell}>
-                                    <Text style={styles.text}>{item}</Text>
-                                </View>
-                            ))}
+                            {
+                                users && users.length > 0 && (
+                                    <View>
+                                        {users.map((user) => (
+                                            <View key={user.id} className="flex flex-row justify-between items-center">
+                                                <Text>{user.usuario.nombre_usuario}</Text>
+                                                <Text>
+                                                    {(() => {
+                                                        switch (user.rol) {
+                                                            case "organizador":
+                                                                return "Organizador";
+                                                            case "colaborador":
+                                                                return "Colaborador";
+                                                            default:
+                                                                return "Usuario";
+                                                        }
+                                                    })()}
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                )
+                            }
                         </View>
-                    </View>
-                    <View className="mb-2">
-                        <Text className="text-center text-2xl font-semibold">Asistentes</Text>
-                        <View className="border-b-2 border-black flex flex-row justify-between">
-                            <Text className="font-bold">Nombre de Usuario</Text>
-                            <Text className="font-bold">Rol</Text>
-                        </View>
-                        {
-                            users && users.length > 0 && (
-                                <View>
-                                    {users.map((user) => (
-                                        <View key={user.id} className="flex flex-row justify-between items-center">
-                                            <Text>{user.usuario.nombre_usuario}</Text>
-                                            <Text>
-                                                {(() => {
-                                                    switch (user.rol) {
-                                                        case "organizador":
-                                                            return "Organizador";
-                                                        case "colaborador":
-                                                            return "Colaborador";
-                                                        default:
-                                                            return "Usuario";
-                                                    }
-                                                })()}
-                                            </Text>
+                    )}
+                    {ticketsStatus && (
+                        <View style={styles.containerTickets}>
+                            {tickets && tickets.length > 0 && (
+                                <TouchableOpacity
+                                    onPress={() => setVisibleTicket(!visibleTicket)}
+                                    style={styles.button}
+                                    className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
+                                >
+                                    <Text style={styles.buttonText} className="text-white">Tickets</Text>
+                                    <Text style={styles.buttonText} className="text-white">
+                                        {visibleTicket ? "⬆" : "⬇"}
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {visibleTicket && tickets && tickets.length > 0 && (
+                                <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
+                                    {tickets.map((ticket) => (
+                                        <View key={ticket.id} className="flex flex-row justify-between items-center">
+                                            <Text className="text-white">{ticket.nombre}</Text>
+                                            <Text className="text-white">{ticket.precio}</Text>
                                         </View>
                                     ))}
                                 </View>
-                            )
-                        }
-                    </View>
-                    <View style={styles.containerTickets}>
-                        {tickets && tickets.length > 0 && (
-                            <TouchableOpacity
-                                onPress={() => setVisibleTicket(!visibleTicket)}
-                                style={styles.button}
-                                className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
-                            >
-                                <Text style={styles.buttonText} className="text-white">Tickets</Text>
-                                <Text style={styles.buttonText} className="text-white">
-                                    {visibleTicket ? "⬆" : "⬇"}
-                                </Text>
-                            </TouchableOpacity>
-                        )}
-
-                        {visibleTicket && tickets && tickets.length > 0 && (
-                            <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
-                                {tickets.map((ticket) => (
-                                    <View key={ticket.id} className="flex flex-row justify-between items-center">
-                                        <Text className="text-white">{ticket.nombre}</Text>
-                                        <Text className="text-white">{ticket.precio}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        )}
-                    </View>
+                            )}
+                        </View>
+                    )}
 
                     <View style={styles.containerPagos}>
 
@@ -434,6 +628,7 @@ export default function Quedada() {
                     onPress={() => {
                         setEditarQuedada(false);
                         setViewUsuariosQuedada(false);
+                        cancelar();
                     }}
                     style={styles.button}
                     className="text-red-600 font-bold"
@@ -465,25 +660,176 @@ export default function Quedada() {
                             <TextInput
                                 className="w-72 lg:w-full bg-white/60"
                                 style={[styles.inputEditable]}
-                                placeholder="NOMBRE USUARIO"
-                                value={quedada.nombre_quedada}
-                                //onChangeText={}
-
+                                placeholder="Nombre quedada"
+                                value={nombreQuedada}
+                                onChangeText={setNombreQuedada}
                             />
                         </View>
                         <View style={styles.containerDescripcio}>
 
-                            <Text>Descripcion</Text>
+                            <Text>Descripción</Text>
                             <View className="flex flex-row gap-x-2 items-end justify-between">
                                 <TextInput
                                     className="w-72 lg:w-full bg-white/60"
                                     style={[styles.inputEditable]}
-                                    placeholder="NOMBRE USUARIO"
-                                    value={quedada.descripcion_quedada}
-                                    //onChangeText={}
+                                    placeholder="Descripcion"
+                                    value={descripcionQuedada}
+                                    onChangeText={setDescripcionQuedada}
 
                                 />
                             </View>
+
+                            <Text style={styles.text}>¿Más de un día?</Text>
+                            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setIsMultiDay(!isMultiDay)}>
+                                {isMultiDay ? (
+                                    <Feather name="check-circle" size={24} color="green" />
+                                ) : (
+                                    <Feather name="circle" size={24} color="gray" />
+                                )}
+                            </TouchableOpacity>
+
+                            <Text style={styles.text}>Fecha y hora de inicio</Text>
+
+                            {Platform.OS === 'android' ? (
+                                <>
+                                    <TouchableOpacity style={styles.button} onPress={() => setShowStartDatePicker(true)}>
+                                        <Text style={styles.buttonText}>Fecha de inicio</Text>
+                                    </TouchableOpacity>
+                                    {showStartDatePicker && (
+                                        <DateTimePicker
+                                            value={startDate}
+                                            mode="date"
+                                            display="default"
+                                            locale="es-ES"
+                                            onChange={onChangeStartDate}
+                                            minimumDate={new Date()}
+                                        />
+                                    )}
+
+                                    <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
+                                        <Text style={styles.buttonText}>Hora de inicio</Text>
+                                    </TouchableOpacity>
+                                    {showStartTimePicker && (
+                                        <DateTimePicker
+                                            value={startTime}
+                                            mode="time"
+                                            display="default"
+                                            is24Hour={true}
+                                            locale="es-ES"
+                                            onChange={onChangeStartTime}
+                                        />
+                                    )}
+                                </>
+                            ) : (
+                                // Web version
+                                <View style={styles.pickerContainer}>
+                                    <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
+                                    <input
+                                        type="date"
+                                        value={startDate.toISOString().split('T')[0]}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        onChange={(e) => {
+                                            const newDate = new Date(e.target.value);
+                                            setStartDate(newDate);
+                                        }}
+                                        style={styles.webInput}
+                                    />
+
+                                    <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
+                                    <input
+                                        type="time"
+                                        value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                                        onChange={(e) => {
+                                            const [hours, minutes] = e.target.value.split(':');
+                                            const newTime = new Date(startTime);
+                                            newTime.setHours(hours, minutes);
+                                            setStartTime(newTime);
+                                        }}
+                                        style={styles.webInput}
+                                    />
+                                </View>
+                            )}
+
+                            {isMultiDay && (
+                                <>
+                                    <Text style={styles.text}>Fecha y hora de finalización</Text>
+
+                                    {Platform.OS === 'android' ? (
+                                        <>
+                                            <TouchableOpacity style={styles.button} onPress={() => setShowEndDatePicker(true)}>
+                                                <Text style={styles.buttonText}>Fecha de finalización</Text>
+                                            </TouchableOpacity>
+                                            {showEndDatePicker && (
+                                                <DateTimePicker
+                                                    value={endDate}
+                                                    mode="date"
+                                                    display="default"
+                                                    locale="es-ES"
+                                                    onChange={onChangeEndDate}
+                                                    minimumDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)}
+                                                />
+                                            )}
+
+                                            <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
+                                                <Text style={styles.buttonText}>Hora de finalización</Text>
+                                            </TouchableOpacity>
+                                            {showEndTimePicker && (
+                                                <DateTimePicker
+                                                    value={endTime}
+                                                    mode="time"
+                                                    display="default"
+                                                    is24Hour={true}
+                                                    locale="es-ES"
+                                                    onChange={onChangeEndTime}
+                                                />
+                                            )}
+                                        </>
+                                    ) : (
+                                        // Web version
+                                        <View style={styles.pickerContainer}>
+                                            <Text style={styles.pickerLabel}>Fecha de Finalización:</Text>
+                                            <input
+                                                type="date"
+                                                value={endDate.toISOString().split('T')[0]}
+                                                min={new Date(startDate.getTime() + 86400000).toISOString().split('T')[0]}
+                                                onChange={(e) => {
+                                                    const newDate = new Date(e.target.value);
+                                                    if (newDate <= startDate) {
+                                                        alert("La fecha final debe ser posterior a la inicial.");
+                                                        return;
+                                                    }
+                                                    setEndDate(newDate);
+                                                }}
+                                                style={styles.webInput}
+                                            />
+
+                                            <Text style={styles.pickerLabel}>Hora de Finalización:</Text>
+                                            <input
+                                                type="time"
+                                                value={endTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                                                onChange={(e) => {
+                                                    const [hours, minutes] = e.target.value.split(':');
+                                                    const end = new Date(endDate);
+                                                    end.setHours(hours, minutes);
+
+                                                    const start = new Date(startDate);
+                                                    start.setHours(startTime.getHours(), startTime.getMinutes());
+
+                                                    if (end <= start) {
+                                                        alert("La hora final debe ser posterior a la inicial.");
+                                                        return;
+                                                    }
+
+                                                    const updated = new Date(endTime);
+                                                    updated.setHours(hours, minutes);
+                                                    setEndTime(updated);
+                                                }}
+                                                style={styles.webInput}
+                                            />
+                                        </View>
+                                    )}
+                                </>
+                            )}
                         </View>
                         <Checkbox.Item
                             label="Próximo Evento"
@@ -513,16 +859,6 @@ export default function Quedada() {
                             </View>
                         )}
 
-                        <View style={styles.containerCalendario7dias}>
-                            <Text>Calendario 7 dias</Text>
-                            <View style={styles.tabla}>
-                                {["Col 1", "Col 2", "Col 3", "Col 4", "Col 5", "Col 6", "Col 7"].map((item, index) => (
-                                    <View key={index} style={styles.cell}>
-                                        <Text style={styles.text}>{item}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
 
                         <Checkbox.Item
                             label="Asistentes"
@@ -597,9 +933,7 @@ export default function Quedada() {
                             </View>
                         )}
 
-                        <Button className="absolute bottom-0" /* onPress={salirQuedada}*/  title={"Aplicar cambios"} />
-
-
+                        <Button className="absolute bottom-0" onPress={guardar}  title={"Aplicar cambios"} />
                     </View>
                 </View>}
                 {editarQuedada && viewUsuariosQuedada && (
@@ -682,7 +1016,7 @@ export default function Quedada() {
                                             });
                                         })
                                     );
-                                    Alert.alert('Guardado', 'Roles actualizados');
+                                    alert('Guardado', 'Roles actualizados');
                                     setHasChanges(false);
                                 }}
                             >
@@ -711,7 +1045,73 @@ export default function Quedada() {
                         <Text>Cancelar</Text></TouchableOpacity>
                 </View>
             </Modal>
+            <Modal
+                visible={showConfirmModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowConfirmModal(false)}
+            >
+                <View style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                }}>
+                    <View style={{
+                        width: '80%',
+                        backgroundColor: 'white',
+                        padding: 20,
+                        borderRadius: 10,
+                        elevation: 5
+                    }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>¿Eliminar evento?</Text>
+                        <Text style={{ marginBottom: 20 }}>
+                            Esta acción eliminará el evento y todos sus pagos asociados. ¿Estás seguro de que deseas continuar?
+                        </Text>
+
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+                            <TouchableOpacity
+                                onPress={() => setShowConfirmModal(false)}
+                                style={{ marginRight: 10 }}
+                            >
+                                <Text style={{ color: '#2563EB', fontWeight: 'bold' }}>Cancelar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    try {
+                                        const response = await fetch(`http://${Globals.ip}:3080/api/deleteEvent`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ id_evento: eventoSeleccionado.id_evento }),
+                                        });
+
+                                        if (!response.ok) throw new Error('Error al eliminar evento');
+
+                                        const result = await response.json();
+                                        if (result === true) {
+                                            setEventoSeleccionado(null);
+                                            window.location.reload();
+                                        } else {
+                                            Alert.alert("Error", "No se pudo eliminar el evento.");
+                                        }
+
+                                    } catch (error) {
+                                        console.error("Error al eliminar el evento:", error);
+                                        Alert.alert("Error", "Ocurrió un error al eliminar el evento.");
+                                    }
+                                    setShowConfirmModal(false);
+                                }}
+                            >
+                                <Text style={{ color: '#EF4444', fontWeight: 'bold' }}>Eliminar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
         </View>
+
     );
 }
 

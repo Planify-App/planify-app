@@ -1,7 +1,7 @@
 // app/globals.js
 
 const Globals = {
-    ip: "192.168.19.245",
+    ip: "192.168.1.140",
     quedadas: [],
 
     setIp: (nuevoValor) => {

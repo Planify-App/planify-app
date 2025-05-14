@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, StyleSheet, Text, View, TouchableOpacity, TextInput, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
-import {StatusBar} from "expo-status-bar";
+import { StatusBar } from "expo-status-bar";
 import Constants from "expo-constants";
 import Globals from "./globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -17,9 +17,20 @@ export default function CrearQuedada() {
     const [startDate, setStartDate] = useState(new Date());
     const [startTime, setStartTime] = useState(new Date());
 
-    const [endDate, setEndDate] = useState(new Date());
-    const [endTime, setEndTime] = useState(new Date(new Date().setHours(23, 59))); // Hora 23:59 por defecto
+    // Establecer fecha de finalización con un día después de la fecha de inicio
+    // ✅ CAMBIO: asegúrate que por defecto `endDate` sea un día después de hoy
+    const [endDate, setEndDate] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        return d;
+    });
 
+// ✅ CAMBIO: también por defecto, setear hora final
+    const [endTime, setEndTime] = useState(() => {
+        const t = new Date();
+        t.setHours(23, 59, 0, 0);
+        return t;
+    });
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -62,9 +73,41 @@ export default function CrearQuedada() {
         checkSession();
     }, [navigationState]);
 
+    const showAlert = (title, message) => {
+        if (Platform.OS === 'web') {
+            // En web usamos el alert nativo del navegador
+            window.alert(`${title}\n\n${message}`);
+        } else {
+            // En móvil usamos el componente Alert de React Native
+            Alert.alert(title, message);
+        }
+    };
+
     const onChangeStartDate = (event, selectedDate) => {
+        if (event?.type === "dismissed") {
+            setShowStartDatePicker(false);
+            return;
+        }
+
         if (selectedDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // ✅ CAMBIO: para comparar solo fecha
+            const selected = new Date(selectedDate);
+            selected.setHours(0, 0, 0, 0);
+
+            if (selected < today) {
+                Alert.alert("Fecha inválida", "No puedes seleccionar una fecha anterior a hoy.");
+                return;
+            }
+
             setStartDate(selectedDate);
+
+            // ✅ CAMBIO: endDate ahora es un día después del startDate
+            const nextDay = new Date(selectedDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            setEndDate(nextDay);
+            setEndTime(new Date(nextDay.setHours(23, 59)));
+
             updateStartText(selectedDate, startTime);
             if (Platform.OS === 'android') {
                 setShowStartDatePicker(false);
@@ -74,6 +117,18 @@ export default function CrearQuedada() {
 
     const onChangeStartTime = (event, selectedTime) => {
         if (selectedTime) {
+            const now = new Date();
+            const selected = new Date(startDate);
+            selected.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+            const nowCompare = new Date();
+            nowCompare.setSeconds(0, 0); // ✅ CAMBIO: más preciso
+
+            if (selected < nowCompare) {
+                Alert.alert("Hora inválida", "La hora de inicio no puede ser anterior a la hora actual.");
+                return;
+            }
+
             setStartTime(selectedTime);
             updateStartText(startDate, selectedTime);
             if (Platform.OS === 'android') {
@@ -83,24 +138,50 @@ export default function CrearQuedada() {
     };
 
     const onChangeEndDate = (event, selectedDate) => {
-        if (selectedDate) {
-            setEndDate(selectedDate);
-            updateEndText(selectedDate, endTime);
-            if (Platform.OS === 'android') {
-                setShowEndDatePicker(false);
-            }
+        if (!selectedDate) {
+            return;
+        }
+
+        const selected = new Date(selectedDate);
+        selected.setHours(0, 0, 0, 0);
+
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        if (selected <= start) {
+            Alert.alert("Fecha inválida", "La fecha de finalización debe ser posterior a la de inicio.");
+            return;
+        }
+
+        setEndDate(selectedDate);
+        updateEndText(selectedDate, endTime);
+        if (Platform.OS === 'android') {
+            setShowEndDatePicker(false);
         }
     };
 
     const onChangeEndTime = (event, selectedTime) => {
-        if (selectedTime) {
-            setEndTime(selectedTime);
-            updateEndText(endDate, selectedTime);
-            if (Platform.OS === 'android') {
-                setShowEndTimePicker(false);
-            }
+        if (!selectedTime) return;
+
+        const start = new Date(startDate);
+        start.setHours(startTime.getHours(), startTime.getMinutes(), 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+        if (end <= start) {
+            Alert.alert("Hora inválida", "La hora de finalización debe ser posterior a la de inicio.");
+            return;
+        }
+
+        setEndTime(selectedTime);
+        updateEndText(endDate, selectedTime);
+        if (Platform.OS === 'android') {
+            setShowEndTimePicker(false);
         }
     };
+
+
 
     const updateStartText = (selectedDate, selectedTime) => {
         let formattedDate = `${selectedDate.getDate()}/${selectedDate.getMonth() + 1}/${selectedDate.getFullYear()}`;
@@ -123,15 +204,18 @@ export default function CrearQuedada() {
         }
     };
 
-
     const handleSave = async () => {
+        if (campoNombreQuedada === "") {
+            showAlert("Error", "El nombre de la quedada no puede estar vacío.");
+            return;
+        }
         const data = {
             userID: userId,
             nombre_quedada: campoNombreQuedada,
             descripcion_quedada: campoDescripcion,
-            fecha_hora_inicio: `${startDate} ${startTime}`,
+            fecha_hora_inicio: formatDateTime(startDate, startTime),
             mas_de_un_dia: isMultiDay,
-            fecha_hora_final: `${endDate} ${endTime}`,
+            fecha_hora_final: formatDateTime(endDate, endTime),
             link_imagen: null,
             mostrar_proximos_eventos: true,
             mostrar_asistentes: true,
@@ -151,8 +235,7 @@ export default function CrearQuedada() {
             if (!response.ok) {
                 throw new Error('Error en la respuesta del servidor');
             }
-            window.alert("La quedada se ha guardado correctamente.");
-            Alert.alert("Éxito", "La quedada se ha guardado correctamente.");
+            showAlert("Éxito", "La quedada se ha guardado correctamente.");
             router.replace('/InicioQuedadas');
 
         } catch (error) {
@@ -161,9 +244,15 @@ export default function CrearQuedada() {
         }
     };
 
+    const formatDateTime = (date, time) => {
+        const d = new Date(date);
+        d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    };
 
     return (
-        <View style={{paddingTop: Constants.statusBarHeight}}>
+        <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
             <Text className="mt-2 font-bold">Nombre de la quedada:</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
@@ -196,6 +285,7 @@ export default function CrearQuedada() {
                             display="default"
                             locale="es-ES"
                             onChange={onChangeStartDate}
+                            minimumDate={new Date()}
                         />
                     )}
 
@@ -220,6 +310,7 @@ export default function CrearQuedada() {
                     <input
                         type="date"
                         value={startDate.toISOString().split('T')[0]}
+                        min={new Date().toISOString().split('T')[0]}
                         onChange={(e) => {
                             const newDate = new Date(e.target.value);
                             setStartDate(newDate);
@@ -248,56 +339,73 @@ export default function CrearQuedada() {
 
                     {Platform.OS === 'android' ? (
                         <>
-                            <TouchableOpacity style={styles.button} onPress={() => setShowStartDatePicker(true)}>
-                                <Text style={styles.buttonText}>Fecha de inicio</Text>
+                            <TouchableOpacity style={styles.button} onPress={() => setShowEndDatePicker(true)}>
+                                <Text style={styles.buttonText}>Fecha de finalización</Text>
                             </TouchableOpacity>
-                            {showStartDatePicker && (
+                            {showEndDatePicker && (
                                 <DateTimePicker
-                                    value={startDate}
+                                    value={endDate}
                                     mode="date"
                                     display="default"
                                     locale="es-ES"
-                                    onChange={onChangeStartDate}
+                                    onChange={onChangeEndDate}
+                                    minimumDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)}
                                 />
                             )}
 
-                            <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
-                                <Text style={styles.buttonText}>Hora de inicio</Text>
+                            <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
+                                <Text style={styles.buttonText}>Hora de finalización</Text>
                             </TouchableOpacity>
-                            {showStartTimePicker && (
+                            {showEndTimePicker && (
                                 <DateTimePicker
-                                    value={startTime}
+                                    value={endTime}
                                     mode="time"
                                     display="default"
                                     is24Hour={true}
                                     locale="es-ES"
-                                    onChange={onChangeStartTime}
+                                    onChange={onChangeEndTime}
                                 />
                             )}
                         </>
                     ) : (
                         // Web version
                         <View style={styles.pickerContainer}>
-                            <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
+                            <Text style={styles.pickerLabel}>Fecha de Finalización:</Text>
                             <input
                                 type="date"
-                                value={startDate.toISOString().split('T')[0]}
+                                value={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
+                                min={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
                                 onChange={(e) => {
                                     const newDate = new Date(e.target.value);
-                                    setStartDate(newDate);
+                                    if (newDate <= startDate) {
+                                        alert("La fecha final debe ser posterior a la inicial.");
+                                        return;
+                                    }
+                                    setEndDate(newDate);
                                 }}
                                 style={styles.webInput}
                             />
 
-                            <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
+                            <Text style={styles.pickerLabel}>Hora de Finalización:</Text>
                             <input
                                 type="time"
-                                value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                                value={endTime.toLocaleTimeString('it-IT').slice(0, 5)}
                                 onChange={(e) => {
                                     const [hours, minutes] = e.target.value.split(':');
-                                    const newTime = new Date(startTime);
-                                    newTime.setHours(hours, minutes);
-                                    setStartTime(newTime);
+                                    const end = new Date(endDate);
+                                    end.setHours(hours, minutes);
+
+                                    const start = new Date(startDate);
+                                    start.setHours(startTime.getHours(), startTime.getMinutes());
+
+                                    if (end <= start) {
+                                        alert("La hora final debe ser posterior a la inicial.");
+                                        return;
+                                    }
+
+                                    const updated = new Date(endTime);
+                                    updated.setHours(hours, minutes);
+                                    setEndTime(updated);
                                 }}
                                 style={styles.webInput}
                             />
@@ -305,6 +413,7 @@ export default function CrearQuedada() {
                     )}
                 </>
             )}
+
 
             <Text className="mt-2 font-bold">Descripción:</Text>
             <TextInput
@@ -321,103 +430,115 @@ export default function CrearQuedada() {
             <TouchableOpacity style={styles.cancel_button} onPress={() => navigation.navigate('MenuNoLog')}>
                 <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-                className="bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
-                onPress={() => navigation.navigate('CalendarioWeb')}
-            >
-                <Text className="text-white text-lg font-semibold">Calendario Web</Text>
-            </TouchableOpacity>
         </View>
     );
 }
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        paddingTop: Constants.statusBarHeight,
+        paddingHorizontal: 20,
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
     },
     text: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    button: {
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
-        borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 220,
-    },
-    buttonText: {
-        color: "white",
-        fontSize: 16,
-    },
-    checkboxContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    checkboxLabel: {
-        fontSize: 18,
-        marginRight: 10,
-    },
-    pickerContainer: {
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    pickerLabel: {
         fontSize: 18,
         fontWeight: '600',
+        marginTop: 20,
         marginBottom: 10,
+        textAlign: 'center',
+        color: '#111827',
     },
-    dateRow: {
+    input: {
+        width: '100%',
+        maxWidth: 400,
+        height: 45,
+        borderColor: '#d1d5db',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#ffffff',
+        fontSize: 16,
+        marginBottom: 16,
+    },
+    desc_input: {
+        width: '100%',
+        maxWidth: 400,
+        height: 100,
+        borderColor: '#d1d5db',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#ffffff',
+        fontSize: 16,
+        textAlignVertical: 'top',
+        marginBottom: 16,
+    },
+    button: {
+        backgroundColor: '#2563eb',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+        marginVertical: 8,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
     },
-    input: {
+    pickerContainer: {
+        width: '100%',
+        maxWidth: 400,
+        marginBottom: 20,
+    },
+    pickerLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+        marginBottom: 8,
+        color: '#374151',
+    },
+    webInput: {
+        width: '100%',
         height: 40,
-        borderColor: '#ccc',
+        paddingHorizontal: 10,
+        borderColor: '#d1d5db',
         borderWidth: 1,
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        marginVertical: 5,
+        borderRadius: 6,
         backgroundColor: '#fff',
+        marginBottom: 16,
+        fontSize: 16,
     },
-    desc_input: {
-        height: 100,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        marginTop: 4,
-        backgroundColor: '#fff',
-    },
-    accept_button:{
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
+    accept_button: {
+        backgroundColor: '#16a34a',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 220,
+        marginTop: 20,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
     },
-    cancel_button:{
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
+    cancel_button: {
+        backgroundColor: '#dc2626',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 150,
+        marginTop: 10,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
     },
 });
+

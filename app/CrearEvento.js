@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Platform } from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Platform, ToastAndroid} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Globals from "./globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as navigation from "expo-router/build/global-state/routing";
 
 const CrearEvento = ({ idQuedada }) => {
     const [pagos, setPagos] = useState(false);
     const [tipoPago, setTipoPago] = useState('Equitativo');
     const [descripcion, setDescripcion] = useState('');
+    const [nombreEvento, setNombreEvento] = useState('');
+    const [lugar, setLugar] = useState('');
     const [users, setUsers] = useState([]);
     const [fecha, setFecha] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -81,38 +84,47 @@ const CrearEvento = ({ idQuedada }) => {
         setUsers(updatedUsers);
     };
 
+    const formatDateTime = (date, time) => {
+        const d = new Date(date);
+        d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    };
+    const formatDate = (date) => {
+        const d = new Date(date);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    };
+
     const handleGuardarEvento = () => {
         const eventoData = {
-            nombre: nombreEvento,
-            fecha: fecha.toISOString(), // formato ISO 8601
-            lugar,
-            descripcion,
+            id_quedada: idQuedada,
+            nombre_evento: nombreEvento,
+            descripcion_evento: descripcion,
+            fecha_hora_evento: formatDate(fecha).toString(),
+            lugar_evento: lugar,
         };
 
         if (pagos) {
-            eventoData.pagos = {
-                cantidadTotal: cantidad,
-                tipoPago,
-                usuarios: users.map(user => ({
-                    id: user.id,
-                    nombre: user.nombre,
-                    cantidad: user.cantidad || '0'
-                }))
-            };
+            const pagos_usuario = users.map(user => ({
+                usuario: user.id,
+                cantidad: user.cantidad || '0'
+            }));
 
-            // Validación: si tipoPago === 'Repartir', suma de cantidades debe ser <= cantidad total
             if (tipoPago === 'Repartir') {
-                const suma = users.reduce((acc, u) => acc + parseFloat(u.cantidad || 0), 0);
+                const suma = pagos_usuario.reduce((acc, u) => acc + parseFloat(u.cantidad || 0), 0);
                 if (suma > parseFloat(cantidad)) {
                     alert("La suma de las cantidades por usuario supera el total indicado.");
                     return;
                 }
             }
+
+            eventoData.mostrar_pagos = true;
+            eventoData.precio_total = cantidad;
+            eventoData.tipo_pago = tipoPago;
+            eventoData.pagos_usuario = pagos_usuario;
         }
 
-        console.log("Datos que se enviarán:", eventoData);
-
-        // Aquí haces el POST (puedes ajustar el endpoint)
         fetch(`http://${Globals.ip}:3080/api/createEvent`, {
             method: 'POST',
             headers: {
@@ -124,14 +136,15 @@ const CrearEvento = ({ idQuedada }) => {
                 if (!response.ok) throw new Error('Error al guardar el evento');
                 return response.json();
             })
-            .then(data => {
-                console.log('Evento guardado correctamente:', data);
-                // Aquí podrías redirigir o limpiar el formulario
-            })
+            .then(
+                window.location.reload()
+            )
             .catch(err => {
                 console.error('Error al guardar el evento:', err);
+                ToastAndroid.show("❌ Error al guardar el evento", ToastAndroid.LONG);
             });
     };
+
 
 
     return (
@@ -139,7 +152,8 @@ const CrearEvento = ({ idQuedada }) => {
             <Text style={styles.title}>Crear Evento</Text>
 
             <Text>Nombre Evento</Text>
-            <TextInput style={styles.input} placeholder="Introduce un nombre para el evento" />
+            <TextInput style={styles.input} onChangeText={setNombreEvento}
+                       placeholder="Introduce un nombre para el evento"/>
 
             {Platform.OS === 'android' && (
                 <TouchableOpacity style={styles.button} onPress={() => setShowDatePicker(true)}>
@@ -170,10 +184,10 @@ const CrearEvento = ({ idQuedada }) => {
                 </View>
             )}
 
-            <TextInput style={styles.input} placeholder="Lugar" />
+            <TextInput style={styles.input} onChangeText={setLugar} placeholder="Lugar"/>
 
             <View style={styles.switchContainer}>
-                <Switch value={pagos} onValueChange={setPagos} />
+                <Switch value={pagos} onValueChange={setPagos}/>
                 <Text>Pagos</Text>
             </View>
 
@@ -193,8 +207,8 @@ const CrearEvento = ({ idQuedada }) => {
                         style={styles.picker}
                         selectedValue={tipoPago}
                         onValueChange={(itemValue) => setTipoPago(itemValue)}>
-                        <Picker.Item label="Equitativo" value="Equitativo" />
-                        <Picker.Item label="Repartir" value="Repartir" />
+                        <Picker.Item label="Equitativo" value="Equitativo"/>
+                        <Picker.Item label="Repartir" value="Repartir"/>
                     </Picker>
 
                     <Text>Usuarios y cantidades:</Text>
@@ -252,7 +266,9 @@ const styles = StyleSheet.create({
     picker: { width: '100%', marginVertical: 10 },
     fechaContainer: { borderWidth: 1, padding: 15, marginVertical: 10, borderRadius: 5, alignItems: 'center', justifyContent: 'center' },
     fechaTexto: { fontSize: 18, fontWeight: 'bold', textAlign: 'center' },
-    webDatePicker: { borderWidth: 1, padding: 8, marginVertical: 5, borderRadius: 5, width: '100%' }
+    webDatePicker: { borderWidth: 1, padding: 8, marginVertical: 5, borderRadius: 5, width: '100%' },
+    buttonText: { color: 'white', fontWeight: 'bold' },
+    textProximoEvento: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });
 
 export default CrearEvento;

@@ -2,7 +2,7 @@ import {
     Alert,
     Animated,
     Button,
-    Keyboard,
+    Keyboard, Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -17,8 +17,16 @@ import Svg, { Path } from "react-native-svg";
 import { StatusBar } from "expo-status-bar";
 import * as Location from 'expo-location';
 import { MultipleSelectList, SelectList } from "react-native-dropdown-select-list";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useNavigation} from "@react-navigation/native";
+import {useRootNavigationState, useRouter} from "expo-router";
 
 export default function ChatIa() {
+    const router = useRouter();
+    const navigationState = useRootNavigationState();
+    const [userId, setUserId] = useState(null);
+
+
     const scrollViewRef = useRef(null);
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const [textInputHeight, setTextInputHeight] = useState(85);
@@ -36,6 +44,36 @@ export default function ChatIa() {
     const [messages, setMessages] = useState([]); // Estado para los mensajes
     const [loading, setLoading] = useState(true); // Estado para la carga de mensajes
     const [error, setError] = useState(null); // Estado para manejar errores
+
+    const counter = useRef(1);
+
+    useEffect(() => {
+        const checkSession = async () => {
+            if (!navigationState?.key) return;
+
+            try {
+                let session = null;
+
+                if (Platform.OS === 'web') {
+                    session = localStorage.getItem("userSession");
+                } else {
+                    session = await AsyncStorage.getItem("userSession");
+                }
+
+                if (session) {
+                    const userData = JSON.parse(session);
+                    setUserId(userData.userId);
+                } else {
+                    router.replace('/MenuNoLog');
+                }
+            } catch (error) {
+                console.error("Error al obtener la sesión:", error);
+                router.replace('/MenuNoLog');
+            }
+        };
+
+        checkSession();
+    }, [navigationState]);
 
     // Función recursiva para renderizar mapas anidados
     const renderNestedData = (data, keyPrefix = '') => {
@@ -78,53 +116,63 @@ export default function ChatIa() {
             setSelectedRestoration(false);
         }
     }, [type]);
+    const loadMessages = async () => {
+        try {
+            const response = await fetch('http://localhost:3080/api/getAiMessages/' + userId);
+            const mensajesData = await response.json();
+            console.log('Datos del servidor:', mensajesData);
 
-    useEffect(() => {
-        const loadMessages = async () => {
-            try {
-                const response = await fetch('http://localhost:3080/api/getAiMessages/XrpqKteN4yvCAjinw4s1');
-                const mensajesData = await response.json();
-                console.log('Datos del servidor:', mensajesData);
-
-                if (!mensajesData || Object.keys(mensajesData).length === 0) {
-                    setMessages([]); // Si no hay mensajes, dejamos el array vacío
-                } else {
-                    // Convertimos el documento en un array de mensajes
-                    const mensajesArray = Object.values(mensajesData);
-                    setMessages(mensajesArray);
-                }
-            } catch (error) {
-                setError('Error al obtener los mensajes');
-            } finally {
-                setLoading(false);
+            if (!mensajesData || Object.keys(mensajesData).length === 0) {
+                setMessages([]); // Si no hay mensajes, dejamos el array vacío
+            } else {
+                // Convertimos el documento en un array de mensajes
+                const mensajesArray = Object.values(mensajesData);
+                setMessages(mensajesArray);
             }
-        };
-
+        } catch (error) {
+            setError('Error al obtener los mensajes');
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        if (counter.current <= 0) {
+            counter.current = 0;
+            return;
+        }
         loadMessages();
-    }, []); // Cargar los mensajes solo cuando el componente se monta
+        counter.current -= 1;
+    }, );
 
     const requestIa = async () => {
-        getLocation().then(async coords => {
-            await setCoords(coords.latitude + ", " + coords.longitude);
-        });
-        if (coords) {
+        try {
+            const location = await getLocation();
+            if (!location) return;
+
+            const coordsString = location.latitude + ", " + location.longitude;
+            setCoords(coordsString);
+
             const promptParams = {
-                coords: coords,
+                coords: coordsString,
                 cantidad: quantity,
                 busqueda_de: type,
                 tipoRestauracion: budget,
-                id: "XrpqKteN4yvCAjinw4s1"
+                id: userId
             };
             console.log(promptParams);
-            return await fetch(`http://localhost:3080/api/iaRequest`, {
+
+            const response = await fetch(`http://localhost:3080/api/iaRequest`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(promptParams),
             });
+
+            return response;
+        } catch (error) {
+            console.error("Error en requestIa:", error);
         }
     };
+
 
     const Quantity = () => {
         const [selected, setSelected] = React.useState([]);
@@ -241,7 +289,7 @@ export default function ChatIa() {
                         messages.map((message, i) => (
                             <View
                                 key={i}
-                                className="pl-6 pr-2 pt-3 pb-2 mb-6 rounded-lg max-w-[70%] mt-4 bg-gray-700 self-start rounded-bl-none"
+                                className="pl-6 pr-2 mb-6 py-8 rounded-lg max-w-[70%] mt-4 bg-gray-700 self-start rounded-bl-none"
                             >
                                 <Text className="text-yellow-300 self-start">Plannify IA</Text>
                                 {renderNestedData(message)}
@@ -290,7 +338,9 @@ export default function ChatIa() {
                     disabled={!typeSelected}
                     onPress={() => {
                         requestIa().then(async result => {
-                            console.log(await result);
+                            loadMessages();
+                            console.log(result);
+                            counter.current = 5;
                         });
                     }}
                 >

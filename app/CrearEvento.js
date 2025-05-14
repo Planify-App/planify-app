@@ -148,24 +148,28 @@ const CrearEvento = ({ idQuedada }) => {
 
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Crear Evento</Text>
+        <View className="p-6 bg-white rounded-2xl shadow-md w-full max-w-xl mx-auto">
+            <Text className="text-2xl font-bold text-center mb-6">Crear Evento</Text>
 
-            <Text>Nombre Evento</Text>
-            <TextInput style={styles.input} onChangeText={setNombreEvento}
-                       placeholder="Introduce un nombre para el evento"/>
+            <Text className="text-base font-medium mb-1">Nombre del Evento</Text>
+            <TextInput
+                className="bg-gray-100 p-3 rounded-lg mb-4"
+                onChangeText={setNombreEvento}
+                placeholder="Introduce un nombre para el evento"
+            />
 
             {Platform.OS === 'android' && (
-                <TouchableOpacity style={styles.button} onPress={() => setShowDatePicker(true)}>
-                    <Text>Selecciona fecha</Text>
+                <TouchableOpacity className="bg-blue-100 py-2 px-4 rounded-lg mb-4" onPress={() => setShowDatePicker(true)}>
+                    <Text className="text-blue-800 text-center">Selecciona fecha</Text>
                 </TouchableOpacity>
             )}
+
             {Platform.OS === 'web' ? (
                 <input
                     type="date"
                     value={fecha.toISOString().split('T')[0]}
                     onChange={(e) => setFecha(new Date(e.target.value))}
-                    style={styles.webDatePicker}
+                    className="bg-gray-100 p-3 rounded-lg mb-4 w-full"
                 />
             ) : showDatePicker || Platform.OS === 'ios' ? (
                 <DateTimePicker
@@ -177,46 +181,53 @@ const CrearEvento = ({ idQuedada }) => {
             ) : null}
 
             {Platform.OS !== 'web' && (
-                <View style={styles.fechaContainer}>
-                    <Text style={styles.fechaTexto}>{fecha.toLocaleDateString('es-ES', {
-                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                    })}</Text>
+                <View className="mb-4">
+                    <Text className="text-gray-600 text-center italic">
+                        {fecha.toLocaleDateString('es-ES', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        })}
+                    </Text>
                 </View>
             )}
 
-            <TextInput style={styles.input} onChangeText={setLugar} placeholder="Lugar"/>
+            <TextInput
+                className="bg-gray-100 p-3 rounded-lg mb-4"
+                onChangeText={setLugar}
+                placeholder="Lugar"
+            />
 
-            <View style={styles.switchContainer}>
-                <Switch value={pagos} onValueChange={setPagos}/>
-                <Text>Pagos</Text>
+            <View className="flex flex-row items-center justify-between mb-4">
+                <Text className="text-base font-medium">Pagos</Text>
+                <Switch value={pagos} onValueChange={setPagos} />
             </View>
 
             {pagos && (
-                <View style={styles.pagosContainer}>
-                    <Text>Cantidad total:</Text>
+                <View className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-4">
+                    <Text className="font-medium mb-1">Cantidad total:</Text>
                     <TextInput
-                        style={styles.input}
+                        className="bg-white p-3 rounded-lg mb-4"
                         keyboardType="numeric"
                         placeholder="Ingrese cantidad"
                         value={cantidad}
                         onChangeText={(text) => setCantidad(text.replace(/[^0-9]/g, ''))}
                     />
 
-                    <Text>Tipo de pago</Text>
+                    <Text className="font-medium mb-1">Tipo de pago</Text>
                     <Picker
-                        style={styles.picker}
                         selectedValue={tipoPago}
-                        onValueChange={(itemValue) => setTipoPago(itemValue)}>
-                        <Picker.Item label="Equitativo" value="Equitativo"/>
-                        <Picker.Item label="Repartir" value="Repartir"/>
+                        onValueChange={(itemValue) => setTipoPago(itemValue)}
+                        className="bg-white mb-4"
+                    >
+                        <Picker.Item label="Equitativo" value="Equitativo" />
+                        <Picker.Item label="Repartir" value="Repartir" />
                     </Picker>
 
-                    <Text>Usuarios y cantidades:</Text>
+                    <Text className="font-medium mb-2">Usuarios y cantidades:</Text>
                     {users.map((user, index) => (
-                        <View key={user.id} style={styles.usuarioRow}>
-                            <Text style={styles.usuarioNombre}>{user.nombre}</Text>
+                        <View key={user.id} className="flex flex-row items-center justify-between mb-2">
+                            <Text className="flex-1">{user.nombre}</Text>
                             <TextInput
-                                style={styles.inputCantidad}
+                                className="bg-white p-2 rounded-lg w-24"
                                 keyboardType="numeric"
                                 placeholder="Cantidad"
                                 value={user.cantidad}
@@ -226,24 +237,26 @@ const CrearEvento = ({ idQuedada }) => {
                         </View>
                     ))}
 
-                    <Text style={styles.note}>
+                    <Text className="text-xs text-gray-500 mt-2">
                         Lo que falte de dinero se repartirá entre los usuarios que no están equitativamente.
                     </Text>
                 </View>
             )}
 
-            <Text>Descripción:</Text>
+            <Text className="text-base font-medium mb-1">Descripción:</Text>
             <TextInput
-                style={styles.inputLarge}
+                className="bg-gray-100 p-3 rounded-lg mb-6 h-28 text-start"
                 multiline
                 onChangeText={setDescripcion}
                 placeholder="Agrega una descripción"
             />
 
-            <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.button}><Text>Cancelar</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={handleGuardarEvento}>
-                    <Text>Guardar</Text>
+            <View className="flex flex-row justify-between">
+                <TouchableOpacity className="bg-gray-300 py-2 px-4 rounded-lg">
+                    <Text className="text-gray-800 font-medium">Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity className="bg-green-600 py-2 px-4 rounded-lg" onPress={handleGuardarEvento}>
+                    <Text className="text-white font-medium">Guardar</Text>
                 </TouchableOpacity>
             </View>
         </View>

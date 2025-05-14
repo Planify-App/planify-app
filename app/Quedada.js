@@ -52,7 +52,35 @@ export default function Quedada() {
     const [startTime, setStartTime] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
     const [endTime, setEndTime] = useState(new Date(new Date().setHours(23, 59)));
+    const [eventos, setEventos] = useState([]);
+    const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
 
+
+    useEffect(() => {
+        if (eventoSeleccionado) {
+            setVisibleEvent(false); // Oculta el menú de eventos cuando se selecciona uno
+        }
+    }, [eventoSeleccionado]);
+    useEffect(() => {
+        if (visibleEvent) {
+            setEventoSeleccionado(null); // Cierra el detalle del evento si se abre el menú
+        }
+    }, [visibleEvent]);
+
+    useEffect(() => {
+        const cargarEventos = async () => {
+            try {
+                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutEvents/${id}`);
+                const data = await response.json();
+                setEventos(data || []);
+                console.log(data)
+            } catch (err) {
+                console.error('Error al cargar eventos:', err);
+            }
+        };
+
+        if (id) cargarEventos();
+    }, [id]);
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
         useEffect(() => {
             const getUserSession = async () => {
@@ -152,7 +180,6 @@ export default function Quedada() {
                     throw new Error(`HTTP ${response.status}: ${errText}`);
                 }
                 const data = await response.json();
-                console.log(data[0]);
                 setQuedada(data[0]);
                 setLinkImagen(data[0].link_imagen);
                 setNombreQuedada(data[0].nombre_quedada);
@@ -441,32 +468,49 @@ export default function Quedada() {
                     </TouchableOpacity>
 
                     <View >
-                        <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
-                            <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
-                                <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
-                                <Text style={styles.buttonText} className="text-white">{visibleEvent ? "⬆" : "⬇"}</Text>
-                            </View>
-                        </TouchableOpacity>
+                        <View style={{ marginBottom: 20 }}>
+                            <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
+                                <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
+                                    <Text style={styles.buttonText}>Próximos Eventos</Text>
+                                    <Text style={styles.buttonText} className="text-white">{visibleEvent ? '⬆' : '⬇'}</Text>
+                                </View>
+                            </TouchableOpacity>
 
-                        {visibleEvent && (
-                            <View className="px-4 py-2 bg-blue-300 rounded-b-lg">
-                                <View style={styles.InfoEvento}>
-                                    <Text className="text-black">Evento</Text>
+                            {visibleEvent && (
+                                <View style={{ backgroundColor: '#93C5FD', padding: 10, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
+                                    {eventos.length > 0 ? (
+                                        eventos.map((evento) => (
+                                            <TouchableOpacity
+                                                key={evento.id}
+                                                onPress={() => setEventoSeleccionado(evento)}
+                                                style={{ backgroundColor: 'white', padding: 10, borderRadius: 8, marginBottom: 8 }}
+                                            >
+                                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{evento.nombre_evento}</Text>
+                                                <Text>{evento.lugar_evento}</Text>
+                                            </TouchableOpacity>
+                                        ))
+                                    ) : (
+                                        <Text style={{ color: 'white' }}>No hay eventos disponibles.</Text>
+                                    )}
                                 </View>
-                                <View style={styles.MapaEvento}>
-                                    <Text>Mapa</Text>
+                            )}
+
+                            {/* Detalle del evento seleccionado */}
+                            {eventoSeleccionado && (
+                                <View style={{ backgroundColor: '#F3F4F6', padding: 16, borderRadius: 10, marginTop: 10 }}>
+                                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{eventoSeleccionado.nombre_evento}</Text>
+                                    <Text style={{ marginTop: 4 }}>📍 Lugar: {eventoSeleccionado.lugar_evento}</Text>
+                                    <Text style={{ marginTop: 2 }}>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
+                                    <Text style={{ marginTop: 6 }}>📋 Descripción: {eventoSeleccionado.descripcion_evento}</Text>
+
+                                    <TouchableOpacity
+                                        onPress={() => setEventoSeleccionado(null)}
+                                        style={{ marginTop: 12, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
+                                    >
+                                        <Text style={{ color: 'white', textAlign: 'center' }}>Cerrar detalle</Text>
+                                    </TouchableOpacity>
                                 </View>
-                            </View>
-                        )}
-                    </View>
-                    <View style={styles.containerCalendario7dias}>
-                        <Text>Calendario 7 dias</Text>
-                        <View style={styles.tabla}>
-                            {["Col 1", "Col 2", "Col 3", "Col 4", "Col 5", "Col 6", "Col 7"].map((item, index) => (
-                                <View key={index} style={styles.cell}>
-                                    <Text style={styles.text}>{item}</Text>
-                                </View>
-                            ))}
+                            )}
                         </View>
                     </View>
 
@@ -587,7 +631,7 @@ export default function Quedada() {
                         </View>
                         <View style={styles.containerDescripcio}>
 
-                            <Text>Descripcion</Text>
+                            <Text>Descripción</Text>
                             <View className="flex flex-row gap-x-2 items-end justify-between">
                                 <TextInput
                                     className="w-72 lg:w-full bg-white/60"
@@ -779,16 +823,6 @@ export default function Quedada() {
                             </View>
                         )}
 
-                        <View style={styles.containerCalendario7dias}>
-                            <Text>Calendario 7 dias</Text>
-                            <View style={styles.tabla}>
-                                {["Col 1", "Col 2", "Col 3", "Col 4", "Col 5", "Col 6", "Col 7"].map((item, index) => (
-                                    <View key={index} style={styles.cell}>
-                                        <Text style={styles.text}>{item}</Text>
-                                    </View>
-                                ))}
-                            </View>
-                        </View>
 
                         <Checkbox.Item
                             label="Asistentes"

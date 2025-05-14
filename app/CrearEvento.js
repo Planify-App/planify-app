@@ -6,7 +6,7 @@ import Globals from "./globals";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as navigation from "expo-router/build/global-state/routing";
 
-const CrearEvento = ({ idQuedada }) => {
+const CrearEvento = ({ idQuedada, onClose  }) => {
     const [pagos, setPagos] = useState(false);
     const [tipoPago, setTipoPago] = useState('Equitativo');
     const [descripcion, setDescripcion] = useState('');
@@ -252,9 +252,10 @@ const CrearEvento = ({ idQuedada }) => {
             />
 
             <View className="flex flex-row justify-between">
-                <TouchableOpacity className="bg-gray-300 py-2 px-4 rounded-lg">
+                <TouchableOpacity className="bg-gray-300 py-2 px-4 rounded-lg" onPress={onClose}>
                     <Text className="text-gray-800 font-medium">Cancelar</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity className="bg-green-600 py-2 px-4 rounded-lg" onPress={handleGuardarEvento}>
                     <Text className="text-white font-medium">Guardar</Text>
                 </TouchableOpacity>

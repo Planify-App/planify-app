@@ -437,170 +437,132 @@ export default function Quedada() {
                     <View className="w-full h-fit relative">
                         <Image
                             source={{ uri: linkImagen }}
-                            className="w-full h-32 lg:h-96 mb-5"
+                            className="w-full h-48 lg:h-96 mb-6 rounded-b-3xl"
                         />
                     </View>
                 )}
-                <View style={styles.containerInfoQuedada} className="px-5">
-                    <View className="flex flex-row gap-x-2 items-end justify-between">
-                        <Text className="font-bold text-4xl text-gray-700">{nombreQuedada}</Text>
-                        <Text className="text-xs text-blue-400 font-semibold pb-1" onPress={() => setEditarQuedada(true)}>Editar</Text>
-                    </View>
-                    <View style={styles.containerDescripcio}>
-                        <Text style={styles.descripcion}>{descripcionQuedada}</Text>
+
+                <View className="px-6 pb-28">
+                    <View className="flex flex-row justify-between items-end mb-4">
+                        <Text className="text-3xl font-bold text-gray-800">{nombreQuedada}</Text>
+                        <Text onPress={() => setEditarQuedada(true)} className="text-blue-500 text-sm font-semibold">Editar</Text>
                     </View>
 
-                    {isMultiDay && (
-                        <View className="flex flex-row gap-x-2 items-center">
-                            <Text className="text-xs text-gray-500">La quedada dura mas de un día</Text>
-                            <Text>La qudada empieza el {formatDateTime(startDate, startTime)}</Text>
-                            <Text>La quedada durará {getDiastotales()} días</Text>
-                            <Text>La qudada termina el {formatDateTime(endDate, endTime)}</Text>
-                        </View>
-                    )}
-                    {!isMultiDay && (
-                        <View className="flex flex-row gap-x-2 items-center">
-                            <Text className="text-xs text-gray-500">La quedada solo dura un día</Text>
-                            <Text>La qudada empieza el {formatDateTime(startDate, startTime)}</Text>
-                        </View>
-                    )}
+                    <Text className="text-base text-gray-700 mb-4">{descripcionQuedada}</Text>
 
-                    <TouchableOpacity style={styles.botonCrearEvento}
-                        onPress={() => setShowEventModal(true)}>
-                     <Text style={styles.botonTexto}>Crear evento</Text>
+                    <View className="mb-4">
+                        {isMultiDay ? (
+                            <View className="space-y-1">
+                                <Text className="text-sm text-gray-500">🗓 La quedada dura más de un día</Text>
+                                <Text>📍 Empieza: {formatDateTime(startDate, startTime)}</Text>
+                                <Text>⏱ Dura: {getDiastotales()} días</Text>
+                                <Text>🏁 Termina: {formatDateTime(endDate, endTime)}</Text>
+                            </View>
+                        ) : (
+                            <Text className="text-sm text-gray-500">🗓 Solo dura un día: {formatDateTime(startDate, startTime)}</Text>
+                        )}
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={() => setShowEventModal(true)}
+                        className="bg-green-500 py-3 rounded-xl mb-5"
+                    >
+                        <Text className="text-white font-semibold text-center">Crear Evento</Text>
                     </TouchableOpacity>
 
-                    <View >
-                        <View style={{ marginBottom: 20 }}>
-                            <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
-                                <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
-                                    <Text style={styles.buttonText}>Próximos Eventos</Text>
-                                    <Text style={styles.buttonText} className="text-white">{visibleEvent ? '⬆' : '⬇'}</Text>
-                                </View>
-                            </TouchableOpacity>
+                    {/* Próximos eventos */}
+                    <View className="mb-5">
+                        <TouchableOpacity
+                            onPress={() => setVisibleEvent(!visibleEvent)}
+                            className={`bg-blue-400 px-4 py-3 rounded-t-xl flex flex-row justify-between items-center ${visibleEvent ? '' : 'rounded-b-xl'}`}
+                        >
+                            <Text className="text-white font-bold text-base">Próximos Eventos</Text>
+                            <Text className="text-white text-lg">{visibleEvent ? '⬆' : '⬇'}</Text>
+                        </TouchableOpacity>
 
-                            {visibleEvent && (
-                                <View style={{ backgroundColor: '#93C5FD', padding: 10, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
-                                    {eventos.length > 0 ? (
-                                        eventos.map((evento) => (
-                                            <TouchableOpacity
-                                                key={evento.id}
-                                                onPress={() => setEventoSeleccionado(evento)}
-                                                style={{ backgroundColor: 'white', padding: 10, borderRadius: 8, marginBottom: 8 }}
-                                            >
-                                                <Text style={{ fontWeight: 'bold', fontSize: 16 }}>{evento.nombre_evento}</Text>
-                                                <Text>{evento.lugar_evento}</Text>
-                                            </TouchableOpacity>
-                                        ))
-                                    ) : (
-                                        <Text style={{ color: 'white' }}>No hay eventos disponibles.</Text>
-                                    )}
-                                </View>
-                            )}
+                        {visibleEvent && (
+                            <View className="bg-blue-300 p-4 rounded-b-xl space-y-2">
+                                {eventos.length > 0 ? (
+                                    eventos.map((evento) => (
+                                        <TouchableOpacity
+                                            key={evento.id}
+                                            onPress={() => setEventoSeleccionado(evento)}
+                                            className="bg-white p-3 rounded-lg"
+                                        >
+                                            <Text className="font-bold text-lg">{evento.nombre_evento}</Text>
+                                            <Text>{evento.lugar_evento}</Text>
+                                        </TouchableOpacity>
+                                    ))
+                                ) : (
+                                    <Text className="text-white">No hay eventos disponibles.</Text>
+                                )}
+                            </View>
+                        )}
 
-                            {/* Detalle del evento seleccionado */}
-                            {eventoSeleccionado && (
-                                <View style={{ backgroundColor: '#F3F4F6', padding: 16, borderRadius: 10, marginTop: 10 }}>
-                                    <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{eventoSeleccionado.nombre_evento}</Text>
-                                    <Text style={{ marginTop: 4 }}>📍 Lugar: {eventoSeleccionado.lugar_evento}</Text>
-                                    <Text style={{ marginTop: 2 }}>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
-                                    <Text style={{ marginTop: 6 }}>📋 Descripción: {eventoSeleccionado.descripcion_evento}</Text>
+                        {eventoSeleccionado && (
+                            <View className="bg-gray-100 p-4 rounded-xl mt-4 space-y-2">
+                                <Text className="text-xl font-bold">{eventoSeleccionado.nombre_evento}</Text>
+                                <Text>📍 Lugar: {eventoSeleccionado.lugar_evento}</Text>
+                                <Text>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
+                                <Text>📋 {eventoSeleccionado.descripcion_evento}</Text>
 
-                                    {/* Botón: Cerrar detalle */}
-                                    <TouchableOpacity
-                                        onPress={() => setEventoSeleccionado(null)}
-                                        style={{ marginTop: 12, backgroundColor: '#2563EB', padding: 10, borderRadius: 8 }}
-                                    >
-                                        <Text style={{ color: 'white', textAlign: 'center' }}>Cerrar detalle</Text>
-                                    </TouchableOpacity>
-
-                                    {/* Botón: Editar */}
-                                    <TouchableOpacity
-                                        onPress={() => setShowEditarModal(true)}
-                                        style={{ marginTop: 8, backgroundColor: '#10B981', padding: 10, borderRadius: 8 }}
-                                    >
-                                        <Text style={{ color: 'white', textAlign: 'center' }}>Editar evento</Text>
-                                    </TouchableOpacity>
-
-                                    {/* Botón: Eliminar */}
-                                    <TouchableOpacity
-                                        onPress={() => setShowConfirmModal(true)}
-                                        style={{ marginTop: 8, backgroundColor: '#EF4444', padding: 10, borderRadius: 8 }}
-                                    >
-                                        <Text style={{ color: 'white', textAlign: 'center' }}>Eliminar evento</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-
-                            {/* Modal: Editar evento */}
-                            <Modal
-                                visible={showEditarModal}
-                                animationType="slide"
-                                onRequestClose={() => setShowEditarModal(false)}
-                            >
-                                <View style={{ flex: 1, padding: 16 }}>
-                                    <EditarQuedada
-                                        evento={eventoSeleccionado}
-                                        onClose={() => setShowEditarModal(false)}
-                                    />
-                                </View>
-                            </Modal>
-
-
-                        </View>
+                                <TouchableOpacity onPress={() => setEventoSeleccionado(null)} className="bg-blue-500 p-3 rounded-lg">
+                                    <Text className="text-white text-center">Cerrar detalle</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setShowEditarModal(true)} className="bg-green-500 p-3 rounded-lg">
+                                    <Text className="text-white text-center">Editar evento</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={() => setShowConfirmModal(true)} className="bg-red-500 p-3 rounded-lg">
+                                    <Text className="text-white text-center">Eliminar evento</Text>
+                                </TouchableOpacity>
+                            </View>
+                        )}
                     </View>
 
+                    {/* Modal edición */}
+                    <Modal visible={showEditarModal} animationType="slide" onRequestClose={() => setShowEditarModal(false)}>
+                        <View className="flex-1 p-4">
+                            <EditarQuedada evento={eventoSeleccionado} onClose={() => setShowEditarModal(false)} />
+                        </View>
+                    </Modal>
+
+                    {/* Asistentes */}
                     {asistentesStatus && (
-                        <View className="mb-2">
-                            <Text className="text-center text-2xl font-semibold">Asistentes</Text>
-                            <View className="border-b-2 border-black flex flex-row justify-between">
-                                <Text className="font-bold">Nombre de Usuario</Text>
+                        <View className="mb-5">
+                            <Text className="text-2xl text-center font-bold mb-3">Asistentes</Text>
+                            <View className="border-b border-black flex flex-row justify-between py-1">
+                                <Text className="font-bold">Nombre</Text>
                                 <Text className="font-bold">Rol</Text>
                             </View>
-                            {
-                                users && users.length > 0 && (
-                                    <View>
-                                        {users.map((user) => (
-                                            <View key={user.id} className="flex flex-row justify-between items-center">
-                                                <Text>{user.usuario.nombre_usuario}</Text>
-                                                <Text>
-                                                    {(() => {
-                                                        switch (user.rol) {
-                                                            case "organizador":
-                                                                return "Organizador";
-                                                            case "colaborador":
-                                                                return "Colaborador";
-                                                            default:
-                                                                return "Usuario";
-                                                        }
-                                                    })()}
-                                                </Text>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )
-                            }
+                            {users.map((user) => (
+                                <View key={user.id} className="flex flex-row justify-between py-1">
+                                    <Text>{user.usuario.nombre_usuario}</Text>
+                                    <Text>
+                                        {{
+                                            organizador: 'Organizador',
+                                            colaborador: 'Colaborador',
+                                        }[user.rol] || 'Usuario'}
+                                    </Text>
+                                </View>
+                            ))}
                         </View>
                     )}
-                    {ticketsStatus && (
-                        <View style={styles.containerTickets}>
-                            {tickets && tickets.length > 0 && (
-                                <TouchableOpacity
-                                    onPress={() => setVisibleTicket(!visibleTicket)}
-                                    style={styles.button}
-                                    className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
-                                >
-                                    <Text style={styles.buttonText} className="text-white">Tickets</Text>
-                                    <Text style={styles.buttonText} className="text-white">
-                                        {visibleTicket ? "⬆" : "⬇"}
-                                    </Text>
-                                </TouchableOpacity>
-                            )}
 
-                            {visibleTicket && tickets && tickets.length > 0 && (
-                                <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
+                    {/* Tickets */}
+                    {ticketsStatus && tickets.length > 0 && (
+                        <View className="mb-5">
+                            <TouchableOpacity
+                                onPress={() => setVisibleTicket(!visibleTicket)}
+                                className={`bg-blue-400 px-4 py-3 rounded-t-xl flex flex-row justify-between items-center ${visibleTicket ? '' : 'rounded-b-xl'}`}
+                            >
+                                <Text className="text-white font-bold">Tickets</Text>
+                                <Text className="text-white">{visibleTicket ? '⬆' : '⬇'}</Text>
+                            </TouchableOpacity>
+
+                            {visibleTicket && (
+                                <View className="bg-blue-300 p-4 rounded-b-xl">
                                     {tickets.map((ticket) => (
-                                        <View key={ticket.id} className="flex flex-row justify-between items-center">
+                                        <View key={ticket.id} className="flex flex-row justify-between py-1">
                                             <Text className="text-white">{ticket.nombre}</Text>
                                             <Text className="text-white">{ticket.precio}</Text>
                                         </View>
@@ -610,15 +572,21 @@ export default function Quedada() {
                         </View>
                     )}
 
-                    <View style={styles.containerPagos}>
-
-                    </View>
-                    <Button className="absolute bottom-0" onPress={salirQuedada} title={"Salir de la quedada"} />
+                    {/* Botón Salir */}
+                    <TouchableOpacity onPress={salirQuedada} className="bg-red-500 py-3 rounded-xl mt-4">
+                        <Text className="text-white text-center font-semibold">Salir de la quedada</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity onPress={() => router.replace(`/chat/Chat?id=${id}`)} style={styles.roundButton}>
+
+                {/* Botón Chat */}
+                <TouchableOpacity
+                    onPress={() => router.replace(`/chat/Chat?id=${id}`)}
+                    className="absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-lg"
+                    style={{ width: 56, height: 56, justifyContent: 'center', alignItems: 'center' }}
+                >
                     <Image
-                        source={require('../assets/icono-chat.png')} // Usa tu imagen
-                        style={styles.roundButtonImage}
+                        source={require('../assets/icono-chat.png')}
+                        style={{ width: 24, height: 24 }}
                         resizeMode="contain"
                     />
                 </TouchableOpacity>

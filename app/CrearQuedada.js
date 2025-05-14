@@ -253,23 +253,28 @@ export default function CrearQuedada() {
 
     return (
         <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
-            <Text className="mt-2 font-bold">Nombre de la quedada:</Text>
+            <Text className="mt-2 font-bold text-2xl mb-4">Nombre de la quedada:</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
                 style={styles.input}
+                placeholder="Recoger mandarinas"
                 value={campoNombreQuedada}
                 onChangeText={nombreQuedada}
             />
             <StatusBar style="auto" />
 
-            <Text style={styles.text}>¿Más de un día?</Text>
-            <TouchableOpacity style={styles.checkboxContainer} onPress={handleBoxPress}>
-                {isMultiDay ? (
-                    <Feather name="check-circle" size={24} color="green" />
-                ) : (
-                    <Feather name="circle" size={24} color="gray" />
-                )}
-            </TouchableOpacity>
+            <View className="flex flex-row justify-between items-center mt-4">
+                <Text className="text-xl font-medium text-black pr-2">¿Más de un día?</Text>
+
+                <TouchableOpacity className="flex flex-row items-center" onPress={handleBoxPress}>
+                    {isMultiDay ? (
+                        <Feather name="check-circle" size={26} color="green" />
+                    ) : (
+                        <Feather name="circle" size={26} color="gray" />
+                    )}
+                </TouchableOpacity>
+            </View>
+
 
             <Text style={styles.text}>Fecha y hora de inicio</Text>
 
@@ -304,33 +309,37 @@ export default function CrearQuedada() {
                     )}
                 </>
             ) : (
-                // Web version
-                <View style={styles.pickerContainer}>
-                    <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
-                    <input
-                        type="date"
-                        value={startDate.toISOString().split('T')[0]}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => {
-                            const newDate = new Date(e.target.value);
-                            setStartDate(newDate);
-                        }}
-                        style={styles.webInput}
-                    />
+                <View className="w-full max-w-md mx-auto mt-6 p-4 bg-white rounded-xl shadow-md space-y-4">
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Fecha de Inicio:</label>
+                        <input
+                            type="date"
+                            value={startDate.toISOString().split('T')[0]}
+                            min={new Date().toISOString().split('T')[0]}
+                            onChange={(e) => {
+                                const newDate = new Date(e.target.value);
+                                setStartDate(newDate);
+                            }}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                        />
+                    </div>
 
-                    <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
-                    <input
-                        type="time"
-                        value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
-                        onChange={(e) => {
-                            const [hours, minutes] = e.target.value.split(':');
-                            const newTime = new Date(startTime);
-                            newTime.setHours(hours, minutes);
-                            setStartTime(newTime);
-                        }}
-                        style={styles.webInput}
-                    />
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Hora de Inicio:</label>
+                        <input
+                            type="time"
+                            value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                            onChange={(e) => {
+                                const [hours, minutes] = e.target.value.split(':');
+                                const newTime = new Date(startTime);
+                                newTime.setHours(hours, minutes);
+                                setStartTime(newTime);
+                            }}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                        />
+                    </div>
                 </View>
+
             )}
 
             {isMultiDay && (
@@ -369,59 +378,70 @@ export default function CrearQuedada() {
                         </>
                     ) : (
                         // Web version
-                        <View style={styles.pickerContainer}>
-                            <Text style={styles.pickerLabel}>Fecha de Finalización:</Text>
-                            <input
-                                type="date"
-                                value={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
-                                min={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
-                                onChange={(e) => {
-                                    const newDate = new Date(e.target.value);
-                                    if (newDate <= startDate) {
-                                        alert("La fecha final debe ser posterior a la inicial.");
-                                        return;
-                                    }
-                                    setEndDate(newDate);
-                                }}
-                                style={styles.webInput}
-                            />
+                        <View className="w-full max-w-md mx-auto mt-6 p-4 bg-white rounded-xl shadow-md space-y-4">
+                            <div className="flex flex-col space-y-2">
+                                <label className="text-sm font-medium text-gray-700">Fecha de Finalización:</label>
+                                <input
+                                    type="date"
+                                    value={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
+                                    min={new Date(endDate.getTime() + 86400000).toISOString().split('T')[0]}
+                                    onChange={(e) => {
+                                        const newDate = new Date(e.target.value);
+                                        if (newDate <= startDate) {
+                                            alert("La fecha final debe ser posterior a la inicial.");
+                                            return;
+                                        }
+                                        setEndDate(newDate);
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                                />
+                            </div>
 
-                            <Text style={styles.pickerLabel}>Hora de Finalización:</Text>
-                            <input
-                                type="time"
-                                value={endTime.toLocaleTimeString('it-IT').slice(0, 5)}
-                                onChange={(e) => {
-                                    const [hours, minutes] = e.target.value.split(':');
-                                    const end = new Date(endDate);
-                                    end.setHours(hours, minutes);
+                            <div className="flex flex-col space-y-2">
+                                <label className="text-sm font-medium text-gray-700">Hora de Finalización:</label>
+                                <input
+                                    type="time"
+                                    value={endTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                                    onChange={(e) => {
+                                        const [hours, minutes] = e.target.value.split(':');
+                                        const end = new Date(endDate);
+                                        end.setHours(hours, minutes);
 
-                                    const start = new Date(startDate);
-                                    start.setHours(startTime.getHours(), startTime.getMinutes());
+                                        const start = new Date(startDate);
+                                        start.setHours(startTime.getHours(), startTime.getMinutes());
 
-                                    if (end <= start) {
-                                        alert("La hora final debe ser posterior a la inicial.");
-                                        return;
-                                    }
+                                        if (end <= start) {
+                                            alert("La hora final debe ser posterior a la inicial.");
+                                            return;
+                                        }
 
-                                    const updated = new Date(endTime);
-                                    updated.setHours(hours, minutes);
-                                    setEndTime(updated);
-                                }}
-                                style={styles.webInput}
-                            />
+                                        const updated = new Date(endTime);
+                                        updated.setHours(hours, minutes);
+                                        setEndTime(updated);
+                                    }}
+                                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                                />
+                            </div>
                         </View>
+
                     )}
                 </>
             )}
 
 
-            <Text className="mt-2 font-bold">Descripción:</Text>
-            <TextInput
-                className="w-72 lg:w-full bg-white/60"
-                style={styles.desc_input}
-                value={campoDescripcion}
-                onChangeText={descripcion}
-            />
+            <View className="w-full max-w-md mx-auto mt-6 space-y-2">
+                <Text className="text-base font-semibold text-gray-800">Descripción:</Text>
+                <TextInput
+                    multiline
+                    numberOfLines={4}
+                    className="w-full px-4 py-2 rounded-lg bg-white/80 border border-gray-300 focus:border-[#297169] focus:ring-2 focus:ring-[#297169] text-gray-800"
+                    value={campoDescripcion}
+                    onChangeText={descripcion}
+                    placeholder="Escribe una descripción..."
+                    placeholderTextColor="#888"
+                />
+            </View>
+
 
             <TouchableOpacity style={styles.accept_button} onPress={handleSave}>
                 <Text style={styles.buttonText}>Guardar</Text>

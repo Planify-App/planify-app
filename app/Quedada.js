@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput, Alert} from 'react-native';
+import {View, Text, StyleSheet, Button, TouchableOpacity, Image, Platform, TextInput, Alert, Modal} from 'react-native';
 import { useRoute } from "@react-navigation/native";
 import {router} from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,6 +12,7 @@ import defaultAvatar from '../assets/profile-photo.jpg';
 import CrownIcon from "./CrownIcon";
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from "expo-image-picker";
+import CrearEvento from "./CrearEvento";
 
 export default function Quedada() {
 
@@ -32,6 +33,8 @@ export default function Quedada() {
     const [viewUsuariosQuedada, setViewUsuariosQuedada] = useState(false);
     const [usuarioRol, setUsuarioRol] = useState(null);
     const [userId, setUserId] = useState(null);
+    const [showEventModal, setShowEventModal] = useState(false);
+
 
     const [proximoEventoStatus, setProximoEventoStatus] = useState(true);
     const [asistentesStatus, setAsistentesStatus] = useState(true);
@@ -75,7 +78,6 @@ export default function Quedada() {
             getUserSession();
         }, []);
     }
-
 
     useEffect(() => {
         const fetchUsuarios = async () => {
@@ -322,7 +324,15 @@ export default function Quedada() {
                     <View style={styles.containerDescripcio}>
                         <Text style={styles.descripcion}>{quedada.descripcion_quedada}</Text>
                     </View>
-                    <View style={styles.containerProximoEvento}>
+
+                    {/* Botón para crear evento */}
+                    <TouchableOpacity
+                        onPress={() => setShowEventModal(true)}
+                    >
+                        <Text>Crear Evento</Text>
+                    </TouchableOpacity>
+
+                    <View >
                         <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
                             <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
                                 <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
@@ -685,6 +695,24 @@ export default function Quedada() {
                     </View>
                 )}
             </View>}
+
+            {/* Modal para crear evento */}
+            <Modal
+                visible={showEventModal}
+                animationType="slide"
+                transparent={false}
+                onRequestClose={() => setShowEventModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <CrearEvento idQuedada={quedada?.id} />
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        onPress={() => setShowEventModal(false)}
+                    >
+                        <Text style={styles.closeButtonText}>Cerrar</Text>
+                    </TouchableOpacity>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -703,12 +731,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     tabla: {
-        flexDirection: "row", // Para colocar las celdas en fila
+        flexDirection: "row",
         borderWidth: 1,
         borderColor: "black",
     },
     cell: {
-        flex: 1, // Distribuye equitativamente las columnas
+        flex: 1,
         borderWidth: 1,
         borderColor: "black",
         padding: 10,

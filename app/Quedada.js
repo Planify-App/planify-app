@@ -15,7 +15,7 @@ import * as ImagePicker from "expo-image-picker";
 import CrearEvento from "./CrearEvento";
 import {Feather} from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import EditarQuedada from "./components/EditarQuedada";
+import EditarQuedada from "./EditarQuedada";
 
 export default function Quedada() {
 
@@ -61,12 +61,12 @@ export default function Quedada() {
 
     useEffect(() => {
         if (eventoSeleccionado) {
-            setVisibleEvent(false); // Oculta el menú de eventos cuando se selecciona uno
+            setVisibleEvent(false);
         }
     }, [eventoSeleccionado]);
     useEffect(() => {
         if (visibleEvent) {
-            setEventoSeleccionado(null); // Cierra el detalle del evento si se abre el menú
+            setEventoSeleccionado(null);
         }
     }, [visibleEvent]);
 
@@ -1027,16 +1027,14 @@ export default function Quedada() {
                 visible={showEventModal}
                 animationType="slide"
                 transparent={false}
-                onRequestClose={() => setShowEventModal(false)}>
-
-                <View style={styles.buttonContainer}>
-                    <CrearEvento idQuedada={quedada?.id} />
-                    <TouchableOpacity
-                        style={styles.closeButton}
-                        onPress={() => setShowEventModal(false)}>
-                        <Text>Cancelar</Text></TouchableOpacity>
-                </View>
+                onRequestClose={() => setShowEventModal(false)}
+            >
+                <CrearEvento
+                    idQuedada={quedada?.id}
+                    onClose={() => setShowEventModal(false)}
+                />
             </Modal>
+
             <Modal
                 visible={showConfirmModal}
                 transparent={true}

@@ -252,7 +252,7 @@ export default function CrearQuedada() {
     };
 
     return (
-        <View style={{paddingTop: Constants.statusBarHeight}}>
+        <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
             <Text className="mt-2 font-bold">Nombre de la quedada:</Text>
             <TextInput
                 className="w-72 lg:w-full bg-white/60"
@@ -430,103 +430,115 @@ export default function CrearQuedada() {
             <TouchableOpacity style={styles.cancel_button} onPress={() => navigation.navigate('MenuNoLog')}>
                 <Text style={styles.buttonText}>Cancelar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-                className="bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all"
-                onPress={() => navigation.navigate('CalendarioWeb')}
-            >
-                <Text className="text-white text-lg font-semibold">Calendario Web</Text>
-            </TouchableOpacity>
         </View>
     );
 }
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        paddingTop: Constants.statusBarHeight,
+        paddingHorizontal: 20,
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: 20,
     },
     text: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    button: {
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
-        borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 220,
-    },
-    buttonText: {
-        color: "white",
-        fontSize: 16,
-    },
-    checkboxContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 20,
-    },
-    checkboxLabel: {
-        fontSize: 18,
-        marginRight: 10,
-    },
-    pickerContainer: {
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    pickerLabel: {
         fontSize: 18,
         fontWeight: '600',
+        marginTop: 20,
         marginBottom: 10,
+        textAlign: 'center',
+        color: '#111827',
     },
-    dateRow: {
+    input: {
+        width: '100%',
+        maxWidth: 400,
+        height: 45,
+        borderColor: '#d1d5db',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#ffffff',
+        fontSize: 16,
+        marginBottom: 16,
+    },
+    desc_input: {
+        width: '100%',
+        maxWidth: 400,
+        height: 100,
+        borderColor: '#d1d5db',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#ffffff',
+        fontSize: 16,
+        textAlignVertical: 'top',
+        marginBottom: 16,
+    },
+    button: {
+        backgroundColor: '#2563eb',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+        marginVertical: 8,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
+    },
+    buttonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
     },
-    input: {
+    pickerContainer: {
+        width: '100%',
+        maxWidth: 400,
+        marginBottom: 20,
+    },
+    pickerLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+        marginBottom: 8,
+        color: '#374151',
+    },
+    webInput: {
+        width: '100%',
         height: 40,
-        borderColor: '#ccc',
+        paddingHorizontal: 10,
+        borderColor: '#d1d5db',
         borderWidth: 1,
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        marginVertical: 5,
+        borderRadius: 6,
         backgroundColor: '#fff',
+        marginBottom: 16,
+        fontSize: 16,
     },
-    desc_input: {
-        height: 100,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 4,
-        paddingHorizontal: 8,
-        marginTop: 4,
-        backgroundColor: '#fff',
-    },
-    accept_button:{
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
+    accept_button: {
+        backgroundColor: '#16a34a',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 220,
+        marginTop: 20,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
     },
-    cancel_button:{
-        flexDirection: "row",
-        backgroundColor: "#007AFF",
-        padding: 10,
+    cancel_button: {
+        backgroundColor: '#dc2626',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginVertical: 10,
-        width: 150,
+        marginTop: 10,
+        alignItems: 'center',
+        width: '100%',
+        maxWidth: 300,
     },
 });
+

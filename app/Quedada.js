@@ -937,7 +937,7 @@ export default function Quedada() {
                     </View>
                 </View>}
                 {editarQuedada && viewUsuariosQuedada && (
-                    <View className="w-64 mx-auto">
+                    <View className="w-72 sm:w-80 mx-auto">
                         {(() => {
                             const organiser = users.find(u => u.rol === 'organizador');
                             const iAmOrg = userId === organiser?.idUsuario;
@@ -945,88 +945,88 @@ export default function Quedada() {
                             return (
                                 <>
                                     {users.map(user => {
-                                            const isUserOrganizer = user.rol === 'organizador';
+                                        const isUserOrganizer = user.rol === 'organizador';
                                         const avatarSrc =
                                             typeof user.usuario.avatar === 'string' && user.usuario.avatar.trim().length > 0
-                                            ? user.usuario.avatar
-                                            : defaultAvatar;
-                                    return (
-                                <View
-                                    key={user.idUsuario}
-                                    className="flex flex-row items-center border-2 border-black/20 rounded-lg py-2 px-4 mt-2"
-                                >
-                                    <Image
-                                        source={{ uri: avatarSrc }}
-                                        style={{
-                                            width: 50,
-                                            height: 50,
-                                            borderRadius: 25,
-                                            marginRight: 16,
-                                        }}
-                                        resizeMode="cover"
-                                    />
+                                                ? user.usuario.avatar
+                                                : defaultAvatar;
 
-                                    <View className="flex-1">
-                                        <Text className="font-bold mb-1">
-                                            {user.usuario.nombre_usuario}
-                                        </Text>
-
-                                        {isUserOrganizer ? (
-                                            <Text className="text-sm text-gray-600 font-semibold">
-                                                Organizador
-                                            </Text>
-                                        ) : (
-                                            <Picker
-                                                selectedValue={roleUpdates[user.idUsuario]}
-                                                onValueChange={val => {
-                                                    setRoleUpdates(prev => ({
-                                                        ...prev,
-                                                        [user.idUsuario]: val
-                                                    }));
-                                                    setHasChanges(true);
-                                                }}
-                                                style={{ height: 40 }}
+                                        return (
+                                            <View
+                                                key={user.idUsuario}
+                                                className="flex flex-row items-center bg-white border border-gray-300 rounded-xl py-3 px-4 mt-3 shadow-sm"
                                             >
-                                                <Picker.Item label="Usuario" value="usuario" />
-                                                <Picker.Item label="Colaborador" value="colaborador" />
-                                            </Picker>
-                                        )}
-                                    </View>
+                                                <Image
+                                                    source={{ uri: avatarSrc }}
+                                                    style={{
+                                                        width: 50,
+                                                        height: 50,
+                                                        borderRadius: 25,
+                                                        marginRight: 16,
+                                                    }}
+                                                    resizeMode="cover"
+                                                />
 
-                                    {isUserOrganizer && <CrownIcon color="black" />}
-                                </View>
-                                    );
-                                })}
+                                                <View className="flex-1">
+                                                    <Text className="font-semibold text-base text-gray-800 mb-1">
+                                                        {user.usuario.nombre_usuario}
+                                                    </Text>
 
-                        {hasChanges && (
-                            <TouchableOpacity
-                                style={styles.saveBtn}
-                                onPress={async () => {
-                                    await Promise.all(
-                                        Object.entries(roleUpdates).map(([uid, role]) => {
-                                            const payload = {
-                                                hangoutId: id,
-                                                userId: uid,
-                                                role: role === 'usuario' ? null : role
-                                            };
-                                            return fetch(`http://${Globals.ip}:3080/api/updateUserRole`, {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify(payload),
-                                            });
-                                        })
-                                    );
-                                    alert('Guardado', 'Roles actualizados');
-                                    setHasChanges(false);
-                                }}
-                            >
-                                <Text style={styles.saveText}>Guardar cambios</Text>
-                            </TouchableOpacity>
-                        )}
+                                                    {isUserOrganizer ? (
+                                                        <Text className="text-sm text-gray-500 font-medium">Organizador</Text>
+                                                    ) : (
+                                                        <Picker
+                                                            selectedValue={roleUpdates[user.idUsuario]}
+                                                            onValueChange={val => {
+                                                                setRoleUpdates(prev => ({
+                                                                    ...prev,
+                                                                    [user.idUsuario]: val,
+                                                                }));
+                                                                setHasChanges(true);
+                                                            }}
+                                                            style={{ height: 40 }}
+                                                        >
+                                                            <Picker.Item label="Usuario" value="usuario" />
+                                                            <Picker.Item label="Colaborador" value="colaborador" />
+                                                        </Picker>
+                                                    )}
+                                                </View>
+
+                                                {isUserOrganizer && <CrownIcon color="black" />}
+                                            </View>
+                                        );
+                                    })}
+
+                                    {hasChanges && (
+                                        <TouchableOpacity
+                                            className="mt-6 bg-green-600 py-2 px-4 rounded-xl shadow"
+                                            onPress={async () => {
+                                                await Promise.all(
+                                                    Object.entries(roleUpdates).map(([uid, role]) => {
+                                                        const payload = {
+                                                            hangoutId: id,
+                                                            userId: uid,
+                                                            role: role === 'usuario' ? null : role,
+                                                        };
+                                                        return fetch(`http://${Globals.ip}:3080/api/updateUserRole`, {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify(payload),
+                                                        });
+                                                    })
+                                                );
+                                                alert('Guardado', 'Roles actualizados');
+                                                setHasChanges(false);
+                                            }}
+                                        >
+                                            <Text className="text-white font-semibold text-center">Guardar cambios</Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </>
                             );
                         })()}
                     </View>
+
                 )}
             </View>}
 

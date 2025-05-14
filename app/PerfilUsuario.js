@@ -248,20 +248,21 @@ export default function PerfilUsuario() {
 
     return (
         <>
-            <View style={{paddingTop: Constants.statusBarHeight}} className="w-full flex justify-center items-center bg-[#DBF3EF]">
+            <View style={{ paddingTop: Constants.statusBarHeight }} className="w-full flex justify-center items-center bg-[#DBF3EF]">
                 <Avatar
                     size="xlarge"
                     rounded
                     source={typeof campoAvatar === 'string' ? { uri: campoAvatar } : campoAvatar}
-                    showAccessory={modoEdicion}>
+                    showAccessory={modoEdicion}
+                >
                     {modoEdicion && <Avatar.Accessory size={24} onPress={pickImage} />}
                 </Avatar>
                 <StatusBar style="auto" />
 
-                <View className="w-96">
-                    <Text className="mt-4 font-semibold">Nombre de usuario:</Text>
+                <View className="w-96 px-4">
+                    <Text className="mt-4 font-semibold text-lg">Nombre de usuario:</Text>
                     <TextInput
-                        className="w-72 lg:w-full bg-white/60"
+                        className="w-72 lg:w-full bg-white/60 p-2 rounded-md mt-2"
                         style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
                         placeholder="NOMBRE USUARIO"
                         value={campoNombreUsuario}
@@ -270,9 +271,9 @@ export default function PerfilUsuario() {
                         disabled={!modoEdicion}
                     />
 
-                    <Text className="mt-4 font-semibold">Correo electrónico:</Text>
+                    <Text className="mt-4 font-semibold text-lg">Correo electrónico:</Text>
                     <TextInput
-                        className="w-72 lg:w-full select-none bg-white/60"
+                        className="w-72 lg:w-full select-none bg-white/60 p-2 rounded-md mt-2"
                         style={[styles.input, styles.inputDisabled]}
                         placeholder="Correo electrónico"
                         value={maskEmail(campoCorreo)}
@@ -280,9 +281,9 @@ export default function PerfilUsuario() {
                         disabled={true}
                     />
 
-                    <Text className="mt-4 font-semibold">Nombre:</Text>
+                    <Text className="mt-4 font-semibold text-lg">Nombre:</Text>
                     <TextInput
-                        className="w-72 lg:w-full bg-white/60"
+                        className="w-72 lg:w-full bg-white/60 p-2 rounded-md mt-2"
                         style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
                         placeholder="Nombre"
                         value={campoNombre}
@@ -291,9 +292,9 @@ export default function PerfilUsuario() {
                         disabled={!modoEdicion}
                     />
 
-                    <Text className="mt-4 font-semibold">Apellidos:</Text>
+                    <Text className="mt-4 font-semibold text-lg">Apellidos:</Text>
                     <TextInput
-                        className="w-72 lg:w-full bg-white/60"
+                        className="w-72 lg:w-full bg-white/60 p-2 rounded-md mt-2"
                         style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
                         placeholder="Apellido"
                         value={campoApellidos}
@@ -302,9 +303,9 @@ export default function PerfilUsuario() {
                         disabled={!modoEdicion}
                     />
 
-                    <Text className="mt-4 font-semibold">Alérgenos (Opcional):</Text>
+                    <Text className="mt-4 font-semibold text-lg">Alérgenos (Opcional):</Text>
                     <TextInput
-                        className="w-72 lg:w-full bg-white/60"
+                        className="w-72 lg:w-full bg-white/60 p-2 rounded-md mt-2"
                         style={[styles.input, modoEdicion ? styles.inputEditable : styles.inputDisabled]}
                         placeholder="Alérgenos"
                         value={campoAlergenos}
@@ -313,18 +314,34 @@ export default function PerfilUsuario() {
                         disabled={!modoEdicion}
                     />
                 </View>
-                <View style={styles.buttonContainer}>
+
+                <View style={styles.buttonContainer} className="mt-4 space-x-4">
                     {modoEdicion ? (
                         <>
-                            <Button title="Cancelar" onPress={cancelarEdicion} color="red" />
-                            <Button title="Guardar" disabled={!hayCambios} onPress={() => { guardarUsuario(); setModoEdicion(false); }} />
+                            <Button
+                                title="Cancelar"
+                                onPress={cancelarEdicion}
+                                color="red"
+                                className="w-1/3 bg-red-600 text-white"
+                            />
+                            <Button
+                                title="Guardar"
+                                disabled={!hayCambios}
+                                onPress={() => { guardarUsuario(); setModoEdicion(false); }}
+                                className="w-1/3 bg-green-600 text-white"
+                            />
                         </>
                     ) : (
-                        <Button title="Editar" onPress={iniciarEdicion} />
+                        <Button
+                            title="Editar"
+                            onPress={iniciarEdicion}
+                            className="w-full bg-blue-500 text-white"
+                        />
                     )}
                 </View>
             </View>
         </>
+
     );
 }
 

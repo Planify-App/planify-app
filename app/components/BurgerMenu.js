@@ -95,13 +95,16 @@ export default function BurgerMenu() {
             </View>
             
             <View style={styles.menuItems}>
-              <TouchableOpacity
-                  style={styles.menuItem}
-                  onPress={() => navigateTo('/PerfilUsuario')}
-              >
-                <Ionicons name="person-circle-outline" size={24} color="#444444" />
-                <Text style={styles.menuItemText}>Perfil</Text>
-              </TouchableOpacity>
+              {Platform.OS === 'web' && (
+                  <TouchableOpacity
+                      style={styles.menuItem}
+                      onPress={() => navigateTo('/PerfilUsuario')}
+                  >
+                    <Ionicons name="person-circle-outline" size={24} color="#444444" />
+                    <Text style={styles.menuItemText}>Perfil</Text>
+                  </TouchableOpacity>
+              )}
+
               <TouchableOpacity 
                 style={styles.menuItem} 
                 onPress={() => navigateTo('/FAQ')}

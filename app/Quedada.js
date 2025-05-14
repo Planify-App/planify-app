@@ -630,70 +630,84 @@ export default function Quedada() {
                         setViewUsuariosQuedada(false);
                         cancelar();
                     }}
-                    style={styles.button}
-                    className="text-red-600 font-bold"
+                    className="text-red-600 font-bold mb-4 text-left pl-6"
                 >
                     Cancelar
                 </Text>
 
-                <Button title={"Editar quedada"} onPress={() => setViewUsuariosQuedada(false)} />
-                <Button title={"Usuarios quedada"} onPress={() => setViewUsuariosQuedada(true)} />
+                <View className="flex flex-row justify-around mb-5">
+                    <TouchableOpacity
+                        onPress={() => setViewUsuariosQuedada(false)}
+                        className={`px-4 py-2 rounded-lg ${!viewUsuariosQuedada ? 'bg-gray-300' : 'bg-blue-500'}`}
+                    >
+                        <Text className="text-white font-semibold">Editar quedada</Text>
+                    </TouchableOpacity>
 
-                {!viewUsuariosQuedada && <View>
-                    {linkImagen && (
-                        <View className="w-full h-fit relative">
-                            <TouchableOpacity onPress={pickImage} className="w-full h-fit">
-                                <Image
-                                    source={{ uri: linkImagen }}
-                                    className="w-full h-32 lg:h-96 mb-5"
+                    <TouchableOpacity
+                        onPress={() => setViewUsuariosQuedada(true)}
+                        className={`px-4 py-2 rounded-lg ${viewUsuariosQuedada ? 'bg-gray-300' : 'bg-blue-500'}`}
+                    >
+                        <Text className="text-white font-semibold">Usuarios quedada</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {!viewUsuariosQuedada && (
+                    <View className="px-4">
+                        {linkImagen && (
+                            <View className="relative mb-5">
+                                <TouchableOpacity onPress={pickImage} className="w-full">
+                                    <Image source={{ uri: linkImagen }} className="w-full h-40 rounded-xl shadow-md" />
+                                </TouchableOpacity>
+                                <Avatar.Accessory
+                                    size={28}
+                                    onPress={pickImage}
+                                    style={{ position: 'absolute', bottom: 10, right: 10 }}
                                 />
-                            </TouchableOpacity>
-                            <Avatar.Accessory size={24} onPress={pickImage} style={{ position: 'absolute', bottom: 10, right: 10 }} />
-                        </View>
-                    )}
-                    {quedada && !quedada.link_imagen && (
-                        <Button title={"Poner imagen"} onPress={() => pickImage()} />
-                    )}
-                    <View style={styles.containerInfoQuedada} className="px-5">
-                        <Text>Nombre quedada</Text>
-                        <View className="flex flex-row gap-x-2 items-end justify-between">
+                            </View>
+                        )}
+
+                        {quedada && !quedada.link_imagen && (
+                            <Button title="Poner imagen" onPress={pickImage} />
+                        )}
+
+                        <View className="bg-white rounded-xl p-4 shadow mb-4">
+                            <Text className="font-semibold mb-1">Nombre quedada</Text>
                             <TextInput
-                                className="w-72 lg:w-full bg-white/60"
-                                style={[styles.inputEditable]}
+                                className="bg-gray-100 rounded-md px-3 py-2 mb-4"
+                                style={styles.inputEditable}
                                 placeholder="Nombre quedada"
                                 value={nombreQuedada}
                                 onChangeText={setNombreQuedada}
                             />
-                        </View>
-                        <View style={styles.containerDescripcio}>
 
-                            <Text>Descripción</Text>
-                            <View className="flex flex-row gap-x-2 items-end justify-between">
-                                <TextInput
-                                    className="w-72 lg:w-full bg-white/60"
-                                    style={[styles.inputEditable]}
-                                    placeholder="Descripcion"
-                                    value={descripcionQuedada}
-                                    onChangeText={setDescripcionQuedada}
+                            <Text className="font-semibold mb-1">Descripción</Text>
+                            <TextInput
+                                className="bg-gray-100 rounded-md px-3 py-2 mb-4"
+                                style={styles.inputEditable}
+                                placeholder="Descripción"
+                                value={descripcionQuedada}
+                                onChangeText={setDescripcionQuedada}
+                            />
 
-                                />
+                            <View className="flex-row items-center justify-between mb-4">
+                                <Text className="font-semibold">¿Más de un día?</Text>
+                                <TouchableOpacity onPress={() => setIsMultiDay(!isMultiDay)}>
+                                    {isMultiDay ? (
+                                        <Feather name="check-circle" size={24} color="green" />
+                                    ) : (
+                                        <Feather name="circle" size={24} color="gray" />
+                                    )}
+                                </TouchableOpacity>
                             </View>
 
-                            <Text style={styles.text}>¿Más de un día?</Text>
-                            <TouchableOpacity style={styles.checkboxContainer} onPress={() => setIsMultiDay(!isMultiDay)}>
-                                {isMultiDay ? (
-                                    <Feather name="check-circle" size={24} color="green" />
-                                ) : (
-                                    <Feather name="circle" size={24} color="gray" />
-                                )}
-                            </TouchableOpacity>
-
-                            <Text style={styles.text}>Fecha y hora de inicio</Text>
-
+                            <Text className="font-semibold mb-1">Fecha y hora de inicio</Text>
                             {Platform.OS === 'android' ? (
                                 <>
-                                    <TouchableOpacity style={styles.button} onPress={() => setShowStartDatePicker(true)}>
-                                        <Text style={styles.buttonText}>Fecha de inicio</Text>
+                                    <TouchableOpacity
+                                        className="bg-blue-500 py-2 px-4 rounded-lg mb-2"
+                                        onPress={() => setShowStartDatePicker(true)}
+                                    >
+                                        <Text className="text-white text-center">Fecha de inicio</Text>
                                     </TouchableOpacity>
                                     {showStartDatePicker && (
                                         <DateTimePicker
@@ -706,8 +720,11 @@ export default function Quedada() {
                                         />
                                     )}
 
-                                    <TouchableOpacity style={styles.button} onPress={() => setShowStartTimePicker(true)}>
-                                        <Text style={styles.buttonText}>Hora de inicio</Text>
+                                    <TouchableOpacity
+                                        className="bg-blue-500 py-2 px-4 rounded-lg mb-4"
+                                        onPress={() => setShowStartTimePicker(true)}
+                                    >
+                                        <Text className="text-white text-center">Hora de inicio</Text>
                                     </TouchableOpacity>
                                     {showStartTimePicker && (
                                         <DateTimePicker
@@ -721,43 +738,42 @@ export default function Quedada() {
                                     )}
                                 </>
                             ) : (
-                                // Web version
-                                <View style={styles.pickerContainer}>
-                                    <Text style={styles.pickerLabel}>Fecha de Inicio:</Text>
+                                <View className="gap-y-3">
+                                    {/* Web */}
+                                    <Text className="font-semibold">Fecha:</Text>
                                     <input
                                         type="date"
                                         value={startDate.toISOString().split('T')[0]}
                                         min={new Date().toISOString().split('T')[0]}
-                                        onChange={(e) => {
-                                            const newDate = new Date(e.target.value);
-                                            setStartDate(newDate);
-                                        }}
-                                        style={styles.webInput}
+                                        onChange={e => setStartDate(new Date(e.target.value))}
+                                        className="border rounded px-2 py-1"
                                     />
-
-                                    <Text style={styles.pickerLabel}>Hora de Inicio:</Text>
+                                    <Text className="font-semibold">Hora:</Text>
                                     <input
                                         type="time"
                                         value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
-                                        onChange={(e) => {
-                                            const [hours, minutes] = e.target.value.split(':');
-                                            const newTime = new Date(startTime);
-                                            newTime.setHours(hours, minutes);
-                                            setStartTime(newTime);
+                                        onChange={e => {
+                                            const [h, m] = e.target.value.split(':');
+                                            const t = new Date(startTime);
+                                            t.setHours(h, m);
+                                            setStartTime(t);
                                         }}
-                                        style={styles.webInput}
+                                        className="border rounded px-2 py-1"
                                     />
                                 </View>
                             )}
 
                             {isMultiDay && (
                                 <>
-                                    <Text style={styles.text}>Fecha y hora de finalización</Text>
+                                    <Text className="font-semibold mt-4 mb-1">Fecha y hora de finalización</Text>
 
                                     {Platform.OS === 'android' ? (
                                         <>
-                                            <TouchableOpacity style={styles.button} onPress={() => setShowEndDatePicker(true)}>
-                                                <Text style={styles.buttonText}>Fecha de finalización</Text>
+                                            <TouchableOpacity
+                                                className="bg-blue-500 py-2 px-4 rounded-lg mb-2"
+                                                onPress={() => setShowEndDatePicker(true)}
+                                            >
+                                                <Text className="text-white text-center">Fecha de finalización</Text>
                                             </TouchableOpacity>
                                             {showEndDatePicker && (
                                                 <DateTimePicker
@@ -766,12 +782,15 @@ export default function Quedada() {
                                                     display="default"
                                                     locale="es-ES"
                                                     onChange={onChangeEndDate}
-                                                    minimumDate={new Date(startDate.getTime() + 24 * 60 * 60 * 1000)}
+                                                    minimumDate={new Date(startDate.getTime() + 86400000)}
                                                 />
                                             )}
 
-                                            <TouchableOpacity style={styles.button} onPress={() => setShowEndTimePicker(true)}>
-                                                <Text style={styles.buttonText}>Hora de finalización</Text>
+                                            <TouchableOpacity
+                                                className="bg-blue-500 py-2 px-4 rounded-lg mb-2"
+                                                onPress={() => setShowEndTimePicker(true)}
+                                            >
+                                                <Text className="text-white text-center">Hora de finalización</Text>
                                             </TouchableOpacity>
                                             {showEndTimePicker && (
                                                 <DateTimePicker
@@ -785,157 +804,130 @@ export default function Quedada() {
                                             )}
                                         </>
                                     ) : (
-                                        // Web version
-                                        <View style={styles.pickerContainer}>
-                                            <Text style={styles.pickerLabel}>Fecha de Finalización:</Text>
+                                        <View className="gap-y-3">
+                                            <Text className="font-semibold">Fecha final:</Text>
                                             <input
                                                 type="date"
                                                 value={endDate.toISOString().split('T')[0]}
                                                 min={new Date(startDate.getTime() + 86400000).toISOString().split('T')[0]}
-                                                onChange={(e) => {
-                                                    const newDate = new Date(e.target.value);
-                                                    if (newDate <= startDate) {
+                                                onChange={e => {
+                                                    const d = new Date(e.target.value);
+                                                    if (d <= startDate) {
                                                         alert("La fecha final debe ser posterior a la inicial.");
                                                         return;
                                                     }
-                                                    setEndDate(newDate);
+                                                    setEndDate(d);
                                                 }}
-                                                style={styles.webInput}
+                                                className="border rounded px-2 py-1"
                                             />
-
-                                            <Text style={styles.pickerLabel}>Hora de Finalización:</Text>
+                                            <Text className="font-semibold">Hora final:</Text>
                                             <input
                                                 type="time"
                                                 value={endTime.toLocaleTimeString('it-IT').slice(0, 5)}
-                                                onChange={(e) => {
-                                                    const [hours, minutes] = e.target.value.split(':');
-                                                    const end = new Date(endDate);
-                                                    end.setHours(hours, minutes);
-
-                                                    const start = new Date(startDate);
-                                                    start.setHours(startTime.getHours(), startTime.getMinutes());
-
-                                                    if (end <= start) {
+                                                onChange={e => {
+                                                    const [h, m] = e.target.value.split(':');
+                                                    const t = new Date(endTime);
+                                                    t.setHours(h, m);
+                                                    if (t <= startDate) {
                                                         alert("La hora final debe ser posterior a la inicial.");
                                                         return;
                                                     }
-
-                                                    const updated = new Date(endTime);
-                                                    updated.setHours(hours, minutes);
-                                                    setEndTime(updated);
+                                                    setEndTime(t);
                                                 }}
-                                                style={styles.webInput}
+                                                className="border rounded px-2 py-1"
                                             />
                                         </View>
                                     )}
                                 </>
                             )}
-                        </View>
-                        <Checkbox.Item
-                            label="Próximo Evento"
-                            status={proximoEventoStatus ? 'checked' : 'unchecked'}
-                            onPress={() => setProximoEventoStatus(!proximoEventoStatus)}
-                            title="Próximo Evento"
-                        />
-                        {proximoEventoStatus && (
-                            <View style={styles.containerProximoEvento}>
-                                <TouchableOpacity onPress={() => setVisibleEvent(!visibleEvent)} style={styles.button}>
-                                    <View style={styles.textProximoEvento} className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleEvent ? "rounded-b-none" : ""} px-4 py-2`}>
-                                        <Text style={styles.buttonText} className="text-white">Próximo Evento</Text>
-                                        <Text style={styles.buttonText} className="text-white">{visibleEvent ? "⬆" : "⬇"}</Text>
-                                    </View>
-                                </TouchableOpacity>
 
-                                {visibleEvent && (
-                                    <View className="px-4 py-2 bg-blue-300 rounded-b-lg">
-                                        <View style={styles.InfoEvento}>
-                                            <Text className="text-black">Evento</Text>
+                            <Checkbox.Item
+                                label="Próximo Evento"
+                                status={proximoEventoStatus ? 'checked' : 'unchecked'}
+                                onPress={() => setProximoEventoStatus(!proximoEventoStatus)}
+                            />
+
+                            {proximoEventoStatus && (
+                                <View className="mb-4">
+                                    <TouchableOpacity
+                                        onPress={() => setVisibleEvent(!visibleEvent)}
+                                        className="bg-blue-500 px-4 py-2 rounded-t-lg flex-row justify-between items-center"
+                                    >
+                                        <Text className="text-white font-semibold">Próximo Evento</Text>
+                                        <Text className="text-white text-xl">{visibleEvent ? "⬆" : "⬇"}</Text>
+                                    </TouchableOpacity>
+
+                                    {visibleEvent && (
+                                        <View className="bg-blue-300 px-4 py-3 rounded-b-lg">
+                                            <Text className="text-white font-semibold mb-2">Evento 1</Text>
+                                            <Text className="text-white font-semibold mb-2">Evento 1</Text>
                                         </View>
-                                        <View style={styles.MapaEvento}>
-                                            <Text>Mapa</Text>
-                                        </View>
-                                    </View>
-                                )}
-                            </View>
-                        )}
-
-
-                        <Checkbox.Item
-                            label="Asistentes"
-                            status={asistentesStatus ? 'checked' : 'unchecked'}
-                            onPress={() => setAsistentesStatus(!asistentesStatus)}
-                            title="Asistentes"
-                        />
-                        {asistentesStatus && (
-                            <View className="mb-2">
-                                <Text className="text-center text-2xl font-semibold">Asistentes</Text>
-                                <View className="border-b-2 border-black flex flex-row justify-between">
-                                    <Text className="font-bold">Nombre de Usuario</Text>
-                                    <Text className="font-bold">Rol</Text>
+                                    )}
                                 </View>
-                                {
-                                    users && users.length > 0 && (
-                                        <View>
-                                            {users.map((user) => (
-                                                <View key={user.id} className="flex flex-row justify-between items-center">
-                                                    <Text>{user.usuario.nombre_usuario}</Text>
-                                                    <Text>
-                                                        {(() => {
-                                                            switch (user.rol) {
-                                                                case "organizador":
-                                                                    return "Organizador";
-                                                                case "colaborador":
-                                                                    return "Colaborador";
-                                                                default:
-                                                                    return "Usuario";
-                                                            }
-                                                        })()}
-                                                    </Text>
+                            )}
+
+                            <Checkbox.Item
+                                label="Asistentes"
+                                status={asistentesStatus ? 'checked' : 'unchecked'}
+                                onPress={() => setAsistentesStatus(!asistentesStatus)}
+                            />
+
+                            {asistentesStatus && (
+                                <View className="mt-2 mb-4">
+                                    <Text className="text-center font-semibold text-lg mb-2">Asistentes</Text>
+                                    <View className="border-b border-black flex-row justify-between pb-1">
+                                        <Text className="font-semibold">Usuario</Text>
+                                        <Text className="font-semibold">Rol</Text>
+                                    </View>
+                                    {users && users.map(user => (
+                                        <View key={user.id} className="flex-row justify-between py-1">
+                                            <Text>{user.usuario.nombre_usuario}</Text>
+                                            <Text>
+                                                {user.rol === 'organizador'
+                                                    ? 'Organizador'
+                                                    : user.rol === 'colaborador'
+                                                        ? 'Colaborador'
+                                                        : 'Usuario'}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+
+                            <Checkbox.Item
+                                label="Tickets"
+                                status={ticketsStatus ? 'checked' : 'unchecked'}
+                                onPress={() => setTicketsStatus(!ticketsStatus)}
+                            />
+
+                            {ticketsStatus && (
+                                <View className="mb-5">
+                                    <TouchableOpacity
+                                        onPress={() => setVisibleTicket(!visibleTicket)}
+                                        className="bg-blue-500 px-4 py-2 rounded-t-lg flex-row justify-between items-center"
+                                    >
+                                        <Text className="text-white font-semibold">Tickets</Text>
+                                        <Text className="text-white text-xl">{visibleTicket ? "⬆" : "⬇"}</Text>
+                                    </TouchableOpacity>
+
+                                    {visibleTicket && (
+                                        <View className="bg-blue-300 p-4 rounded-b-lg grid grid-cols-2 gap-4">
+                                            {tickets.map(ticket => (
+                                                <View key={ticket.id} className="flex-row justify-between">
+                                                    <Text className="text-white">{ticket.nombre}</Text>
+                                                    <Text className="text-white">{ticket.precio}</Text>
                                                 </View>
                                             ))}
                                         </View>
-                                    )
-                                }
-                            </View>
-                        )}
+                                    )}
+                                </View>
+                            )}
 
-                        <Checkbox.Item
-                            label="Tikets"
-                            status={ticketsStatus ? 'checked' : 'unchecked'}
-                            onPress={() => setTicketsStatus(!ticketsStatus)}
-                            title="Tikets"
-                        />
-                        {ticketsStatus && (
-                            <View style={styles.containerTickets}>
-                                {tickets && tickets.length > 0 && (
-                                    <TouchableOpacity
-                                        onPress={() => setVisibleTicket(!visibleTicket)}
-                                        style={styles.button}
-                                        className={`flex flex-row justify-between items-center bg-blue-400 rounded-lg ${visibleTicket ? "rounded-b-none" : ""} px-4 py-2`}
-                                    >
-                                        <Text style={styles.buttonText} className="text-white">Tickets</Text>
-                                        <Text style={styles.buttonText} className="text-white">
-                                            {visibleTicket ? "⬆" : "⬇"}
-                                        </Text>
-                                    </TouchableOpacity>
-                                )}
-
-                                {visibleTicket && tickets && tickets.length > 0 && (
-                                    <View className="grid grid-cols-2 gap-4 px-4 py-2 bg-blue-300 rounded-b-lg mb-5">
-                                        {tickets.map((ticket) => (
-                                            <View key={ticket.id} className="flex flex-row justify-between items-center">
-                                                <Text className="text-white">{ticket.nombre}</Text>
-                                                <Text className="text-white">{ticket.precio}</Text>
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-                            </View>
-                        )}
-
-                        <Button className="absolute bottom-0" onPress={guardar}  title={"Aplicar cambios"} />
+                            <Button title="Aplicar cambios" onPress={guardar} />
+                        </View>
                     </View>
-                </View>}
+                )}
+
                 {editarQuedada && viewUsuariosQuedada && (
                     <View className="w-72 sm:w-80 mx-auto">
                         {(() => {

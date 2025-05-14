@@ -326,10 +326,9 @@ export default function Quedada() {
                     </View>
 
                     {/* Botón para crear evento */}
-                    <TouchableOpacity
-                        onPress={() => setShowEventModal(true)}
-                    >
-                        <Text>Crear Evento</Text>
+                    <TouchableOpacity style={styles.botonCrearEvento}
+                        onPress={() => setShowEventModal(true)}>
+                     <Text style={styles.botonTexto}>Crear evento</Text>
                     </TouchableOpacity>
 
                     <View >
@@ -702,16 +701,14 @@ export default function Quedada() {
                 visible={showEventModal}
                 animationType="slide"
                 transparent={false}
-                onRequestClose={() => setShowEventModal(false)}
-            >
-                <View style={styles.modalContainer}>
+                onRequestClose={() => setShowEventModal(false)}>
+
+                <View style={styles.buttonContainer}>
                     <CrearEvento idQuedada={quedada?.id} />
                     <TouchableOpacity
                         style={styles.closeButton}
-                        onPress={() => setShowEventModal(false)}
-                    >
-                        <Text style={styles.closeButtonText}>Cerrar</Text>
-                    </TouchableOpacity>
+                        onPress={() => setShowEventModal(false)}>
+                        <Text>Cancelar</Text></TouchableOpacity>
                 </View>
             </Modal>
         </View>
@@ -780,5 +777,30 @@ const styles = StyleSheet.create({
         width: 32,
         height: 32,
         tintColor: '#fff', // Puedes quitar esto si tu imagen no necesita recolorearse
+    },
+    botonCrearEvento: {
+        backgroundColor: '#5dd55d',
+        padding: 5,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 10,
+    },
+    botonTexto: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    buttonContainer: {
+        justifyContent: 'space-between',
+        marginTop: 10
+    },
+    closeButton: {
+        flexDirection: 'row', justifyContent: 'space-between', marginTop: 10
     },
 });

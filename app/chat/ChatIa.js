@@ -2,7 +2,7 @@ import {
     Alert,
     Animated,
     Button,
-    Keyboard, Platform,
+    Keyboard, Linking, Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -20,6 +20,7 @@ import { MultipleSelectList, SelectList } from "react-native-dropdown-select-lis
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useNavigation} from "@react-navigation/native";
 import {useRootNavigationState, useRouter} from "expo-router";
+import Globals from "../globals";
 
 export default function ChatIa() {
     const router = useRouter();
@@ -45,7 +46,7 @@ export default function ChatIa() {
     const [loading, setLoading] = useState(true); // Estado para la carga de mensajes
     const [error, setError] = useState(null); // Estado para manejar errores
 
-    const counter = useRef(1);
+    const counter = useRef(0);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -59,6 +60,7 @@ export default function ChatIa() {
                 } else {
                     session = await AsyncStorage.getItem("userSession");
                 }
+
 
                 if (session) {
                     const userData = JSON.parse(session);
@@ -75,24 +77,84 @@ export default function ChatIa() {
         checkSession();
     }, [navigationState?.key]);
 
-    // Función recursiva para renderizar mapas anidados
+    useEffect(() => {
+        loadMessages();
+    }, [userId]);
+
     const renderNestedData = (data, keyPrefix = '') => {
         return Object.entries(data).map(([key, value]) => {
             const currentKey = keyPrefix + key;
             if (typeof value === 'object' && value !== null) {
-                // Si es un objeto, lo recorremos recursivamente
+                const name = value.nombre;
                 return (
                     <View key={currentKey} style={{ paddingLeft: 10, marginTop: 4 }}>
-                        <Text style={{ fontWeight: 'bold', color: 'yellow' }}>{key}:</Text>
+                        <Text style={{ fontWeight: 'bold', color: '#37968c', textDecorationLine: 'underline' }}>{name}:</Text>
                         {renderNestedData(value, currentKey + '-')}
                     </View>
                 );
             }
-            // Si es un valor primitivo lo renderizamos directamente
+            var field_name;
+            var field_value;
+            if (key === "descripcion") {
+                field_name = "Descripción: ";
+                field_value = value.toString();
+            } else if (key === "tipo") {
+                field_name = "Tipo de local: ";
+                field_value = value.toString();
+            } else if (key === "precio") {
+                field_name = "Precio: ";
+                field_value = value.toString();
+            } else if (key === "direccion") {
+                field_name = "Dirección: ";
+                field_value = value.toString();
+            } else if (key === "enlace_google_maps") {
+                field_name = "Enlace a Google Maps";
+                field_value = value.toString();
+                return (
+                    <TouchableOpacity
+                        onPress={() => Linking.openURL(field_value)}
+                        style={{
+                            marginRight: 10,
+                            backgroundColor: '#297169',
+                            paddingVertical: 5,
+                            paddingHorizontal: 10,
+                            borderRadius: 8,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 'fit-content',
+                            margin: 5,
+                            marginLeft: 10,
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Abrir enlace: ${field_name}`}
+                    >
+                        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16 }}>
+                            {field_name}
+                        </Text>
+                    </TouchableOpacity>
+                );
+            } else if (key === "estado") {
+                field_name = "Estado: ";
+                field_value = value.toString();
+            } else if (key === "horario") {
+                field_name = "Horario:\n";
+                field_value = value.toString().split(", ").join("\n");
+            } else if (key === "nombre") {
+                return
+            } else if (key === "distancia_metros") {
+                field_name = "Distancia en metros: ";
+                field_value = value.toString();
+            }
             return (
-                <Text key={currentKey} style={{ color: 'white', marginLeft: 10 }}>
-                    {key}: {value.toString()}
+                <Text key={currentKey} style={{ marginLeft: 10, flexDirection: 'row', flexWrap: 'wrap' }}>
+                    <Text style={{ color: '#57b9ac', fontWeight: 'bold' }}>
+                        {field_name}
+                    </Text>
+                    <Text style={{ color: 'white' }}>
+                        {field_value}
+                    </Text>
                 </Text>
+
             );
         });
     };
@@ -118,12 +180,15 @@ export default function ChatIa() {
     }, [type]);
     const loadMessages = async () => {
         try {
-            const response = await fetch('http://localhost:3080/api/getAiMessages/' + userId);
+            console.log("userid load: " + userId);
+            if (!userId) return;
+            const response = await fetch(`http://${Globals.ip}:3080/api/getAiMessages/${userId}`);
+            console.log(response);
             const mensajesData = await response.json();
             console.log('Datos del servidor:', mensajesData);
 
             if (!mensajesData || Object.keys(mensajesData).length === 0) {
-                setMessages([]); // Si no hay mensajes, dejamos el array vacío
+                setMessages([]);
             } else {
                 // Convertimos el documento en un array de mensajes
                 const mensajesArray = Object.values(mensajesData);
@@ -161,7 +226,7 @@ export default function ChatIa() {
             };
             console.log(promptParams);
 
-            const response = await fetch(`http://localhost:3080/api/iaRequest`, {
+            const response = await fetch(`http://${Globals.ip}:3080/api/iaRequest`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(promptParams),
@@ -344,17 +409,10 @@ export default function ChatIa() {
                         });
                     }}
                 >
-                    <Svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <Path
-                            d="M8 4V14.383L13.238 12L8 9.617V4ZM5 2H19C19.552 2 20 2.448 20 3V21C20 21.552 19.552 22 19 22H5C4.448 22 4 21.552 4 21V3C4 2.448 4.448 2 5 2Z"
-                            fill="white"
-                        />
+                    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <Path fill="none" />
+                        <Path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z" />
+                        <Path d="M6.5 12h14.5" />
                     </Svg>
                 </TouchableOpacity>
             </View>

@@ -135,21 +135,34 @@ export default function PerfilUsuario() {
 
     const uploadImage = async (imageUri) => {
         let formData = new FormData();
-        formData.append('image', {
-            uri: imageUri,
-            name: 'foto.jpg',
-            type: 'image/jpeg',
-        });
 
+        let file;
+
+        if (Platform.OS === 'web') {
+            const response = await fetch(imageUri);
+            const blob = await response.blob();
+
+            file = new File([blob], 'foto.jpg', {
+                type: blob.type || 'image/jpeg',
+            });
+        } else {
+            file = {
+                uri: imageUri,
+                name: 'foto.jpg',
+                type: 'image/jpeg',
+            };
+        }
+
+        formData.append('image', file);
         formData.append('userId', userId);
 
         try {
-            let response = await fetch(`http://${Globals.ip}:3080/api/upload`, { // Endpoint de tu backend
+            const response = await fetch(`http://${Globals.ip}:3080/api/upload`, {
                 method: 'POST',
                 body: formData,
             });
 
-            let json = await response.json();
+            const json = await response.json();
             if (json.url) {
                 console.log('Imagen subida correctamente:', json.url);
                 return json.url;
@@ -162,6 +175,7 @@ export default function PerfilUsuario() {
             return null;
         }
     };
+
 
 
     const iniciarEdicion = () => {
@@ -226,7 +240,7 @@ export default function PerfilUsuario() {
                 console.log(errorData);
                 Alert.alert('Error', errorData.message || 'Error al guardar la información del usuario');
             }
-            router.push('/MenuNoLog');
+            router.push('/PerfilUsuario');
         } catch (error) {
             console.error("Error al guardar la información del usuario:", error);
         }

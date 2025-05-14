@@ -6,9 +6,9 @@ import Constants from "expo-constants";
 import { StatusBar } from "expo-status-bar";
 import Logo from "../Logo";
 import PinIcon from "../PinIcon";
+import Globals from "../globals";
 
 export default function Chats() {
-    const ip = "192.168.16.112";
     const [quedadas, setQuedadas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -42,7 +42,7 @@ export default function Chats() {
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`http://${ip}:3080/api/getHangoutsUser/${userId}`);
+                const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutsUser/${userId}`);
                 if (!response.ok) {
                     const text = await response.text();
                     throw new Error(`HTTP ${response.status}: ${text}`);
@@ -77,8 +77,8 @@ export default function Chats() {
                         className="border-b-2 border-gray-300 py-4 px-8 w-full"
                         onPress={() => router.push('/chat/ChatIa')}
                     >
-                        <View className="flex flex-row items-center gap-x-4 justify-between">
-                            <View className="flex flex-row items-center gap-x-4">
+                        <View className="flex flex-row gap-x-4 justify-between">
+                            <View className="flex flex-row gap-x-4">
                                 <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
                                 <Text className="font-semibold text-lg">Chat IA</Text>
                             </View>
@@ -102,7 +102,7 @@ export default function Chats() {
                         className="border-b-2 border-gray-300 py-4 px-8 w-full"
                         onPress={() => router.push('/chat/ChatIa')}
                     >
-                        <View className="flex flex-row items-center gap-x-4 justify-between">
+                        <View className="flex flex-row gap-x-4 justify-between">
                             <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
                             <Text className="font-semibold text-lg">Chat IA</Text>
                             <PinIcon />
@@ -124,9 +124,9 @@ export default function Chats() {
                     className="border-b-2 border-gray-300 py-4 px-8 w-full"
                     onPress={() => router.push('/chat/ChatIa')}
                 >
-                    <View className="flex flex-row gap-x-4 justify-between">
+                    <View className="flex flex-row items-center gap-x-4 justify-between">
                         <Logo size="w-12 h-12 rounded-full bg-white p-2" color="#297169" />
-                        <Text className="font-semibold text-lg">Chat IA</Text>
+                        <Text className="font-semibold text-lg flex-1 pl-2">Chat IA</Text>
                         <PinIcon />
                     </View>
                 </TouchableOpacity>

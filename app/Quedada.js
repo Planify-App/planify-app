@@ -267,7 +267,7 @@ export default function Quedada() {
         formData.append('idQuedada', id);
 
         try {
-            const response = await fetch(`http://${Globals.ip}:3080/api/upload`, {
+            const response = await fetch(`http://${Globals.ip}:3080/api/upload/quedada`, {
                 method: 'POST',
                 body: formData,
             });
@@ -308,8 +308,8 @@ export default function Quedada() {
         <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
             <StatusBar style="auto" />
             {!editarQuedada && <View>
-                {quedada && quedada.link_imagen && (
-                    <View className="w-full h-fit">
+                {linkImagen && (
+                    <View className="w-full h-fit relative">
                         <Image
                             source={{ uri: linkImagen }}
                             className="w-full h-32 lg:h-96 mb-5"
@@ -446,15 +446,16 @@ export default function Quedada() {
                 <Button title={"Usuarios quedada"} onPress={() => setViewUsuariosQuedada(true)} />
 
                 {!viewUsuariosQuedada && <View>
-                    {quedada && quedada.link_imagen && (
-                    <View className="w-full h-fit">
-                        <Image
-                            source={{ uri: quedada.link_imagen }}
-                            className="w-full h-32 lg:h-96 mb-5"
-                            onPress={pickImage}
-                        />
-                        <Avatar.Accessory size={24} onPress={pickImage}/>
-                    </View>
+                    {linkImagen && (
+                        <View className="w-full h-fit relative">
+                            <TouchableOpacity onPress={pickImage} className="w-full h-fit">
+                                <Image
+                                    source={{ uri: linkImagen }}
+                                    className="w-full h-32 lg:h-96 mb-5"
+                                />
+                            </TouchableOpacity>
+                            <Avatar.Accessory size={24} onPress={pickImage} style={{ position: 'absolute', bottom: 10, right: 10 }} />
+                        </View>
                     )}
                     {quedada && !quedada.link_imagen && (
                         <Button title={"Poner imagen"} onPress={() => pickImage()} />

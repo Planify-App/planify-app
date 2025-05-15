@@ -117,7 +117,7 @@ const EditarEvento = ({ evento, onClose }) => {
                 }
             }
 
-            eventoData.precio_total = cantidad;
+            eventoData.cantidad_total = cantidad;
             eventoData.tipo_pago = tipoPago;
             eventoData.pagos_usuario = pagos_usuario;
         }
@@ -128,11 +128,15 @@ const EditarEvento = ({ evento, onClose }) => {
             body: JSON.stringify(eventoData),
         })
             .then(res => res.json())
+            .then(data => {
+                onClose();
+            })
             .catch(err => {
                 console.error("Error editando evento:", err);
                 ToastAndroid.show("❌ Error de red", ToastAndroid.LONG);
             });
     };
+
 
     return (
 

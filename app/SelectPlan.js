@@ -109,9 +109,6 @@ export default function SelectPlan() {
                         <Text className="text-sm">• Limitado en plantillas y personalización.</Text>
                         <Text className="text-sm">• Ideal para probar la aplicación.</Text>
                     </View>
-                    <TouchableOpacity onPress={() => handlePurchase('free')} className="mt-10 bg-[#2C7067] border-[#2C7067] border-2 py-4 px-8 rounded-lg">
-                        <Text className="text-white font-semibold">Adquirir Plan</Text>
-                    </TouchableOpacity>
                 </View>
 
 
@@ -128,7 +125,7 @@ export default function SelectPlan() {
                         <Text className="text-sm">• Soporte prioritario para usuarios en crecimiento.</Text>
                     </View>
                     <TouchableOpacity onPress={() => handlePurchase('basic')} className="mt-10 bg-[#2C7067] border-[#2C7067] border-2 py-4 px-8 rounded-lg">
-                        <Text className="text-white font-semibold">Adquirir Plan</Text>
+                        <Text className="text-white font-semibold text-center">Adquirir Plan</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -146,7 +143,7 @@ export default function SelectPlan() {
                         <Text className="text-sm\">• Soporte premium y actualizaciones exclusivas.</Text>
                     </View>
                     <TouchableOpacity onPress={() => handlePurchase('premium')} className="mt-10 bg-[#2C7067] border-[#2C7067] border-2 py-4 px-8 rounded-lg">
-                        <Text className="text-white font-semibold">Adquirir Plan</Text>
+                        <Text className="text-white font-semibold text-center">Adquirir Plan</Text>
                     </TouchableOpacity>
                 </View>
 

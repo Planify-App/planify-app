@@ -120,6 +120,14 @@ export default function BurgerMenu() {
                 <Ionicons name="document-text-outline" size={24} color="#444444" />
                 <Text style={styles.menuItemText}>Política de Privacidad</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigateTo('/SelectPlan')}
+              >
+                <Ionicons name="medal-outline" size={24} color="#FFDF00" />
+                <Text style={[styles.menuItemText, styles.planes]}>Planes</Text>
+              </TouchableOpacity>
               
               <TouchableOpacity 
                 style={[styles.menuItem, styles.logoutItem]} 
@@ -224,4 +232,7 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#FF3B30',
   },
+  planes: {
+    color: '#FFDF00',
+  }
 });

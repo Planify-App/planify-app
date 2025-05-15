@@ -28,6 +28,7 @@ export default function Quedada() {
     const [error, setError] = useState(null);
     const [roleUpdates, setRoleUpdates] = useState({});
     const [hasChanges, setHasChanges] = useState(false);
+    const [userOrEmail, setUserOrEmail] = useState('');
 
     const [visibleEvent, setVisibleEvent] = useState(false);
     const [visibleTicket, setVisibleTicket] = useState(false);
@@ -57,6 +58,8 @@ export default function Quedada() {
     const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
     const [showEditarModal, setShowEditarModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    const currentUserId = userId;
 
 
     useEffect(() => {
@@ -387,6 +390,71 @@ export default function Quedada() {
             console.error(error);
         }
     }
+    const showUserMenu = (targetUserId, targetUserName) => {
+        const options = ['Expulsar usuario', 'Cancelar'];
+        const destructiveIndex = 0;
+        const cancelIndex = 1;
+
+        if (Platform.OS === 'ios') {
+            ActionSheetIOS.showActionSheetWithOptions({
+                options,
+                destructiveButtonIndex: destructiveIndex,
+                cancelButtonIndex: cancelIndex,
+                title: `¿Qué quieres hacer con ${targetUserName}?`
+            }, buttonIndex => {
+                if (buttonIndex === destructiveIndex) {
+                    expelUser(targetUserId);
+                }
+            });
+        } else {
+            // Android / Web: usa un Alert
+            Alert.alert(
+                `¿Qué quieres hacer con ${targetUserName}?`,
+                null,
+                [
+                    { text: 'Cancelar', style: 'cancel' },
+                    { text: 'Expulsar usuario', style: 'destructive', onPress: () => expelUser(targetUserId) },
+                ]
+            );
+        }
+    };
+
+    const handleInviteUser = async () => {
+        try {
+            const response = await fetch(`http://${Globals.ip}:3080/api/inviteUser`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usernameOrEmail: userOrEmail, invitationCode: quedada.codigo_invitacion })
+            });
+            const result = await response.json();
+            if (result.status) {
+                Alert.alert('Invitación enviada', 'Se ha enviado la invitación a tu correo electrónico.');
+            } else {
+                Alert.alert('Error', result.message || 'Error al enviar la invitación.');
+            }
+        } catch (error) {
+            console.error('Error en /api/inviteUser:', error);
+            Alert.alert('Error', 'Ocurrió un error al enviar la invitación.');
+        }
+    }
+
+    const expelUser = async (targetUserId) => {
+        try {
+            await fetch(`http://${Globals.ip}:3080/api/removeUserFromHangout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hangoutId: id, userId: targetUserId })
+            });
+            // Actualiza la lista local tras expulsión
+            setUsers(prev => prev.filter(u => u.idUsuario !== targetUserId));
+        } catch (err) {
+            console.error('No se pudo expulsar al usuario:', err);
+            Alert.alert('Error', 'No pudimos expulsar al usuario.');
+        }
+    };
+
+
+
     const showAlert = (title, message) => {
         if (Platform.OS === 'web') {
             // En web usamos el alert nativo del navegador
@@ -906,6 +974,17 @@ export default function Quedada() {
                                 <>
                                     {users.map(user => {
                                         const isUserOrganizer = user.rol === 'organizador';
+                                        const isSelf     = user.idUsuario === currentUserId;
+                                        const myRole     = roleUpdates[currentUserId];
+                                        const targetRole = user.rol;
+
+                                        const showMenu =
+                                            !isSelf &&
+                                            (
+                                                myRole === 'organizador' ||
+                                                (myRole === 'colaborador' && targetRole === 'usuario')
+                                            );
+
                                         const avatarSrc =
                                             typeof user.usuario.avatar === 'string' && user.usuario.avatar.trim().length > 0
                                                 ? user.usuario.avatar
@@ -916,6 +995,14 @@ export default function Quedada() {
                                                 key={user.idUsuario}
                                                 className="flex flex-row items-center bg-white border border-gray-300 rounded-xl py-3 px-4 mt-3 shadow-sm"
                                             >
+                                                {showMenu && (
+                                                    <TouchableOpacity
+                                                        onPress={() => showUserMenu(user.idUsuario, user.usuario.nombre_usuario)}
+                                                        style={{ position: 'absolute', top: 8, right: 8 }}  // ¡arriba a la derecha!
+                                                    >
+                                                        <Feather name="more-vertical" size={20} color="#555" />
+                                                    </TouchableOpacity>
+                                                )}
                                                 <Image
                                                     source={{ uri: avatarSrc }}
                                                     style={{
@@ -982,6 +1069,14 @@ export default function Quedada() {
                                             <Text className="text-white font-semibold text-center">Guardar cambios</Text>
                                         </TouchableOpacity>
                                     )}
+                                    <Text className="mt-4 mb-2 text-md font-bold text-center">Correo Electrónico/Nombre de Usuario:</Text>
+                                    <TextInput className="bg-white b-2 py-2 px-4 rounded-lg border-black/60" placeholder="username/email" value={userOrEmail} onChangeText={setUserOrEmail}/>
+                                    <TouchableOpacity className="mt-4 bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all" onPress={handleInviteUser}>
+                                        <Text className="text-white text-lg font-semibold">Invitar</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity>
+                                        <Text>Mostrar Código de invitación</Text>
+                                    </TouchableOpacity>
                                 </>
                             );
                         })()}

@@ -156,7 +156,7 @@ export default function InicioQuedadas(){
             <View className="w-full mx-auto">
                 <View
                     style={{ width: '100%'}}
-                    className="mx-auto flex-row flex-wrap justify-center gap-6"
+                    className="mx-auto flex-row flex-wrap justify-center gap-6 mb-4"
                 >
                     {quedadas.map((q) => {
                         return (

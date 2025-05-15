@@ -81,7 +81,7 @@ export default function InicioQuedadas(){
 
     if (loading) {
         return (
-            <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen">
+            <View style={{paddingTop: Constants.statusBarHeight}} className="flex lg:justify-center items-center min-h-screen bg-[#DBF3EF]">
                 <StatusBar style="auto" />
                 <View className="flex gap-y-4 mb-6">
                     <TouchableOpacity

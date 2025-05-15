@@ -413,7 +413,7 @@ export default function Quedada() {
 
     if (loading) {
         return (
-            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+            <View className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-center items-center flex-col">
                 <StatusBar style="auto" />
                 <Text className="text-center text-2xl font-bold">Cargando Quedada...</Text>
             </View>
@@ -422,7 +422,7 @@ export default function Quedada() {
 
     if (error) {
         return (
-            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+            <View className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-center items-center flex-col">
                 <StatusBar style="auto" />
                 <Text className="text-center text-2xl font-bold">Error al obtener la Quedada.</Text>
             </View>
@@ -430,7 +430,7 @@ export default function Quedada() {
     }
 
     return (
-        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-start flex-col">
             <StatusBar style="auto" />
             {!editarQuedada && <View>
                 {linkImagen && (

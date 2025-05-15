@@ -616,9 +616,16 @@ export default function Quedada() {
                                     )}
                                 </View>
 
-                                <TouchableOpacity onPress={() => setEventoSeleccionado(null)} className="bg-blue-500 p-3 rounded-lg">
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setEventoSeleccionado(null);
+                                        setVisibleEvent(true);
+                                    }}
+                                    className="bg-blue-500 p-3 rounded-lg"
+                                >
                                     <Text className="text-white text-center">Cerrar detalle</Text>
                                 </TouchableOpacity>
+
 
                                 {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
                                     <View className="space-y-2">

@@ -130,6 +130,8 @@ export default function Quedada() {
             setRoleUpdates(
                 data.reduce((acc, u) => {
                     acc[u.idUsuario] = u.rol || 'usuario';
+                    setRoleUpdates(acc);
+                    setUsuarioRol(acc[u.idUsuario]);
                     return acc;
                 }, {})
             );
@@ -445,7 +447,11 @@ export default function Quedada() {
                 <View className="px-6 pb-28">
                     <View className="flex flex-row justify-between items-end mb-4">
                         <Text className="text-3xl font-bold text-gray-800">{nombreQuedada}</Text>
-                        <Text onPress={() => setEditarQuedada(true)} className="text-blue-500 text-sm font-semibold">Editar</Text>
+                        {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                            <Text onPress={() => setEditarQuedada(true)} className="text-blue-500 text-sm font-semibold">
+                                Editar
+                            </Text>
+                        )}
                     </View>
 
                     <Text className="text-base text-gray-700 mb-4">{descripcionQuedada}</Text>
@@ -463,13 +469,14 @@ export default function Quedada() {
                         )}
                     </View>
 
-                    <TouchableOpacity
-                        onPress={() => setShowEventModal(true)}
-                        className="bg-green-500 py-3 rounded-xl mb-5"
-                    >
-                        <Text className="text-white font-semibold text-center">Crear Evento</Text>
-                    </TouchableOpacity>
-
+                    {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                        <TouchableOpacity
+                            onPress={() => setShowEventModal(true)}
+                            className="bg-green-500 py-3 rounded-xl mb-5"
+                        >
+                            <Text className="text-white font-semibold text-center">Crear Evento</Text>
+                        </TouchableOpacity>
+                    )}
                     {/* Próximos eventos */}
                     <View className="mb-5">
                         <TouchableOpacity
@@ -509,14 +516,20 @@ export default function Quedada() {
                                 <TouchableOpacity onPress={() => setEventoSeleccionado(null)} className="bg-blue-500 p-3 rounded-lg">
                                     <Text className="text-white text-center">Cerrar detalle</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setShowEditarModal(true)} className="bg-green-500 p-3 rounded-lg">
-                                    <Text className="text-white text-center">Editar evento</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setShowConfirmModal(true)} className="bg-red-500 p-3 rounded-lg">
-                                    <Text className="text-white text-center">Eliminar evento</Text>
-                                </TouchableOpacity>
+
+                                {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                                    <View className="space-y-2">
+                                        <TouchableOpacity onPress={() => setShowEditarModal(true)} className="bg-green-500 p-3 rounded-lg">
+                                            <Text className="text-white text-center">Editar evento</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => setShowConfirmModal(true)} className="bg-red-500 p-3 rounded-lg">
+                                            <Text className="text-white text-center">Eliminar evento</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                         )}
+
                     </View>
 
                     {/* Modal edición */}

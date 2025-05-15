@@ -133,6 +133,8 @@ export default function Quedada() {
             setRoleUpdates(
                 data.reduce((acc, u) => {
                     acc[u.idUsuario] = u.rol || 'usuario';
+                    setRoleUpdates(acc);
+                    setUsuarioRol(acc[u.idUsuario]);
                     return acc;
                 }, {})
             );
@@ -481,7 +483,7 @@ export default function Quedada() {
 
     if (loading) {
         return (
-            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+            <View className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-center items-center flex-col">
                 <StatusBar style="auto" />
                 <Text className="text-center text-2xl font-bold">Cargando Quedada...</Text>
             </View>
@@ -490,7 +492,7 @@ export default function Quedada() {
 
     if (error) {
         return (
-            <View className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-center items-center flex-col">
+            <View className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-center items-center flex-col">
                 <StatusBar style="auto" />
                 <Text className="text-center text-2xl font-bold">Error al obtener la Quedada.</Text>
             </View>
@@ -498,7 +500,7 @@ export default function Quedada() {
     }
 
     return (
-        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen bg-[#DBF3EF] pb-10 flex justify-start flex-col">
+        <View style={{paddingTop: Constants.statusBarHeight}} className="w-full min-h-screen lg:min-h-screen pb-10 flex justify-start flex-col">
             <StatusBar style="auto" />
             {!editarQuedada && <View>
                 {linkImagen && (
@@ -513,7 +515,11 @@ export default function Quedada() {
                 <View className="px-6 pb-28">
                     <View className="flex flex-row justify-between items-end mb-4">
                         <Text className="text-3xl font-bold text-gray-800">{nombreQuedada}</Text>
-                        <Text onPress={() => setEditarQuedada(true)} className="text-blue-500 text-sm font-semibold">Editar</Text>
+                        {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                            <Text onPress={() => setEditarQuedada(true)} className="text-blue-500 text-sm font-semibold">
+                                Editar
+                            </Text>
+                        )}
                     </View>
 
                     <Text className="text-base text-gray-700 mb-4">{descripcionQuedada}</Text>
@@ -531,13 +537,14 @@ export default function Quedada() {
                         )}
                     </View>
 
-                    <TouchableOpacity
-                        onPress={() => setShowEventModal(true)}
-                        className="bg-green-500 py-3 rounded-xl mb-5"
-                    >
-                        <Text className="text-white font-semibold text-center">Crear Evento</Text>
-                    </TouchableOpacity>
-
+                    {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                        <TouchableOpacity
+                            onPress={() => setShowEventModal(true)}
+                            className="bg-green-500 py-3 rounded-xl mb-5"
+                        >
+                            <Text className="text-white font-semibold text-center">Crear Evento</Text>
+                        </TouchableOpacity>
+                    )}
                     {/* Próximos eventos */}
                     <View className="mb-5">
                         <TouchableOpacity
@@ -577,14 +584,20 @@ export default function Quedada() {
                                 <TouchableOpacity onPress={() => setEventoSeleccionado(null)} className="bg-blue-500 p-3 rounded-lg">
                                     <Text className="text-white text-center">Cerrar detalle</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setShowEditarModal(true)} className="bg-green-500 p-3 rounded-lg">
-                                    <Text className="text-white text-center">Editar evento</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setShowConfirmModal(true)} className="bg-red-500 p-3 rounded-lg">
-                                    <Text className="text-white text-center">Eliminar evento</Text>
-                                </TouchableOpacity>
+
+                                {(usuarioRol === 'organizador' || usuarioRol === 'colaborador') && (
+                                    <View className="space-y-2">
+                                        <TouchableOpacity onPress={() => setShowEditarModal(true)} className="bg-green-500 p-3 rounded-lg">
+                                            <Text className="text-white text-center">Editar evento</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => setShowConfirmModal(true)} className="bg-red-500 p-3 rounded-lg">
+                                            <Text className="text-white text-center">Eliminar evento</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
                             </View>
                         )}
+
                     </View>
 
                     {/* Modal edición */}

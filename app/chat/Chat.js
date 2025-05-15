@@ -221,7 +221,7 @@ export default function Chat() {
             }
 
             // Actualizamos el estado de mensajes solo una vez
-            setMessages(prev => [...prev, ...nuevosMensajes]);
+            setMessages(nuevosMensajes);
         } catch (error) {
             console.error("Error desencriptando:", error);
         }

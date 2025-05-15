@@ -193,6 +193,7 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
                 onChangeText={setNombreEvento}
                 placeholder="Introduce un nombre para el evento"
             />
+            <Text style={styles.text}>Fecha y hora de inicio</Text>
 
             {Platform.OS === 'android' && (
                 <TouchableOpacity className="bg-blue-100 py-2 px-4 rounded-lg mb-4" onPress={() => setShowDatePicker(true)}>
@@ -216,43 +217,6 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
                 />
             ) : null}
 
-            <Text style={styles.text}>Fecha y hora de inicio</Text>
-
-            {Platform.OS === 'android' ? (
-                <>
-
-                    <TouchableOpacity style={styles.button}>
-                        <Text style={styles.buttonText}>Hora de inicio</Text>
-                    </TouchableOpacity>
-                        <DateTimePicker
-                            value={startTime}
-                            mode="time"
-                            display="default"
-                            is24Hour={true}
-                            locale="es-ES"
-                            onChange={onChangeStartTime}
-                        />
-                </>
-            ) : (
-                <View className="w-full max-w-md mx-auto mt-6 p-4 bg-white rounded-xl shadow-md space-y-4">
-                    <div className="flex flex-col space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Hora de Inicio:</label>
-                        <input
-                            type="time"
-                            value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
-                            onChange={(e) => {
-                                const [hours, minutes] = e.target.value.split(':');
-                                const newTime = new Date(startTime);
-                                newTime.setHours(hours, minutes);
-                                setStartTime(newTime);
-                            }}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
-                        />
-                    </div>
-                </View>
-
-            )}
-
             {Platform.OS !== 'web' && (
                 <View className="mb-4">
                     <Text className="text-gray-600 text-center italic">
@@ -261,6 +225,64 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
                         })}
                     </Text>
                 </View>
+            )}
+
+
+            <Text className="text-base font-medium mb-2">Hora de inicio</Text>
+
+            {Platform.OS === 'web' ? (
+                <input
+                    type="time"
+                    value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                    onChange={(e) => {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const newTime = new Date(startTime);
+                        newTime.setHours(hours, minutes);
+                        setStartTime(newTime);
+                    }}
+                    className="bg-gray-100 p-3 rounded-lg mb-4 w-full"
+                />
+            ) : (
+                <>
+                    <TouchableOpacity
+                        onPress={() => setShowDatePicker(true)}
+                        className="bg-blue-100 py-2 px-4 rounded-lg mb-4"
+                    >
+                        <Text className="text-blue-800 text-center">
+                            {startTime.toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={startTime}
+                            mode="time"
+                            display="default"
+                            is24Hour={true}
+                            locale="es-ES"
+                            onChange={(event, selectedTime) => {
+                                setShowDatePicker(false);
+                                if (selectedTime) {
+                                    const selected = new Date(startDate);
+                                    selected.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+                                    const now = new Date();
+                                    now.setSeconds(0, 0);
+
+                                    if (selected < now) {
+                                        Alert.alert("Hora inválida", "La hora de inicio no puede ser anterior a la hora actual.");
+                                        return;
+                                    }
+
+                                    setStartTime(selectedTime);
+                                }
+                            }}
+                        />
+                    )}
+                </>
             )}
 
             <TextInput

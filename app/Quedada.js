@@ -12,6 +12,7 @@ import defaultAvatar from '../assets/profile-photo.jpg';
 import CrownIcon from "./CrownIcon";
 import {Picker} from '@react-native-picker/picker';
 import * as ImagePicker from "expo-image-picker";
+import * as Clipboard from 'expo-clipboard';
 import CrearEvento from "./CrearEvento";
 import {Feather} from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -58,6 +59,12 @@ export default function Quedada() {
     const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
     const [showEditarModal, setShowEditarModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [codigoInvitacion, setCodigoInvitacion] = useState(null);
+    const [verInvitacion, setVerInvitacion] = useState(false);
+
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showKickModal, setShowKickModal] = useState(false);
+
 
     const currentUserId = userId;
 
@@ -130,18 +137,27 @@ export default function Quedada() {
         const fetchUsuarios = async () => {
             const resp = await fetch(`http://${Globals.ip}:3080/api/getUsersFromHangout/${id}`);
             const data = await resp.json();
-            setUsers(data);
-            setRoleUpdates(
-                data.reduce((acc, u) => {
-                    acc[u.idUsuario] = u.rol || 'usuario';
-                    setRoleUpdates(acc);
-                    setUsuarioRol(acc[u.idUsuario]);
-                    return acc;
-                }, {})
-            );
+
+            const filteredData = data.filter(u => u && u.idUsuario);
+            setUsers(filteredData);
+
+            const roleMap = {};
+            filteredData.forEach(u => {
+                roleMap[u.idUsuario] = u.rol || 'usuario';
+            });
+            setRoleUpdates(roleMap);
+
+            if (userId && roleMap[userId]) {
+                setUsuarioRol(roleMap[userId]);
+                console.log("Actualizo el rol del usuario actual: " + roleMap[userId]);
+            }
         };
-        if (id) fetchUsuarios();
-    }, [id]);
+
+        if (id && userId) {
+            fetchUsuarios();
+        }
+    }, [id, userId]);
+
 
     useEffect(() => {
         const fetchTickets = async () => {
@@ -189,6 +205,7 @@ export default function Quedada() {
                     throw new Error(`HTTP ${response.status}: ${errText}`);
                 }
                 const data = await response.json();
+                console.log(data);
                 setQuedada(data[0]);
                 setLinkImagen(data[0].link_imagen);
                 setNombreQuedada(data[0].nombre_quedada);
@@ -201,6 +218,7 @@ export default function Quedada() {
                 setProximoEventoStatus(!!data[0].mostrar_proximos_eventos);
                 setTicketsStatus(!!data[0].mostrar_tickets);
                 setAsistentesStatus(!!data[0].mostrar_asistentes);
+                setCodigoInvitacion(data[0].codigo_invitacion);
 
             } catch (err) {
                 if (!signal.aborted) {
@@ -1105,9 +1123,34 @@ export default function Quedada() {
                                     <TouchableOpacity className="mt-4 bg-[#2C7067] py-4 lg:py-2 px-8 lg:px4 rounded-lg min-w-48 lg:min-w-42 flex items-center justify-center lg:opacity-80 lg:hover:opacity-100 lg:hover:scale-[1.01] lg:transition-all" onPress={handleInviteUser}>
                                         <Text className="text-white text-lg font-semibold">Invitar</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity>
-                                        <Text>Mostrar Código de invitación</Text>
-                                    </TouchableOpacity>
+
+                                    <View className="items-center mt-6">
+                                        <TouchableOpacity
+                                            onPress={() => setVerInvitacion(!verInvitacion)}
+                                            className="bg-[#568d85] px-4 py-2 rounded-xl"
+                                        >
+                                            <Text className="text-white text-base font-medium">
+                                                {verInvitacion ? 'Ocultar Código' : 'Mostrar Código de invitación'}
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        {verInvitacion && (
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    Clipboard.setStringAsync(codigoInvitacion);
+                                                    alert('¡Código copiado al portapapeles!');
+                                                }}
+                                                className="mt-4 bg-gray-100 px-4 py-3 rounded-xl w-64"
+                                            >
+                                                <Text className="text-center text-lg font-bold text-gray-800">
+                                                    Código de invitación: {codigoInvitacion}
+                                                </Text>
+                                                <Text className="text-center text-xs text-gray-500 mt-1">
+                                                    (Toca para copiar)
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
                                 </>
                             );
                         })()}

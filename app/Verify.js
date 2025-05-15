@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import Globals from './globals';
 import {useRoute} from "@react-navigation/native";
+import {router} from "expo-router";
 
 export default function Verify() {
     const [loading, setLoading] = useState(false);

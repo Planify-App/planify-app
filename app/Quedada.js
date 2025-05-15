@@ -599,7 +599,7 @@ export default function Quedada() {
                                 <Text className="text-xl font-bold">{eventoSeleccionado.nombre_evento}</Text>
                                 <Text>📍 Lugar: <Text className="font-bold">{eventoSeleccionado.lugar_evento}</Text></Text>
                                 <Text>📅 Fecha: <Text className="font-bold">{eventoSeleccionado.fecha_hora_evento}</Text></Text>
-                                <Text>📋 <Text className="font-bold">{eventoSeleccionado.descripcion_evento}</Text></Text>
+                                <Text>📋 Descripción<Text className="font-bold">{eventoSeleccionado.descripcion_evento}</Text></Text>
 
                                 <View className="mt-4">
                                     <Text className="font-bold text-base mb-2">💸 Pagos por usuario:</Text>

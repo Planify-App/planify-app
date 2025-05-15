@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, Switch, StyleSheet,
-    Platform, ToastAndroid
+    Platform, ToastAndroid, Alert, ScrollView
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -20,8 +20,32 @@ const EditarEvento = ({ evento, onClose }) => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [cantidad, setCantidad] = useState(evento.precio_total || '');
     const [userId, setUserId] = useState(null);
+    const [startTime, setStartTime] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date());
 
     const navigation = useNavigation();
+
+    const onChangeStartTime = (event, selectedTime) => {
+        if (selectedTime) {
+            const now = new Date();
+            const selected = new Date(startDate);
+            selected.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+            const nowCompare = new Date();
+            nowCompare.setSeconds(0, 0); // ✅ CAMBIO: más preciso
+
+            if (selected < nowCompare) {
+                Alert.alert("Hora inválida", "La hora de inicio no puede ser anterior a la hora actual.");
+                return;
+            }
+
+            setStartTime(selectedTime);
+            updateStartText(startDate, selectedTime);
+            if (Platform.OS === 'android') {
+                setShowStartTimePicker(false);
+            }
+        }
+    };
 
     useEffect(() => {
         const getUserSession = async () => {
@@ -85,7 +109,12 @@ const EditarEvento = ({ evento, onClose }) => {
         updatedUsers[index].cantidad = numericText;
         setUsers(updatedUsers);
     };
-
+    const formatDateTime = (date, time) => {
+        const d = new Date(date);
+        d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+        const pad = (n) => n.toString().padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+    };
     const formatDate = (date) => {
         const d = new Date(date);
         const pad = (n) => n.toString().padStart(2, '0');
@@ -97,7 +126,7 @@ const EditarEvento = ({ evento, onClose }) => {
             id_evento: evento.id_evento,
             nombre_evento: nombreEvento,
             descripcion_evento: descripcion,
-            fecha_hora_evento: formatDate(fecha),
+            fecha_hora_evento: formatDateTime(fecha, startTime),
             lugar_evento: lugar,
             mostrar_pagos: pagos,
             completado: false,
@@ -130,6 +159,7 @@ const EditarEvento = ({ evento, onClose }) => {
             .then(res => res.json())
             .then(data => {
                 onClose();
+                location.reload();
             })
             .catch(err => {
                 console.error("Error editando evento:", err);
@@ -140,7 +170,7 @@ const EditarEvento = ({ evento, onClose }) => {
 
     return (
 
-        <View className="p-6 bg-white rounded-2xl shadow-md w-full max-w-xl mx-auto">
+        <ScrollView className="p-6 bg-white rounded-2xl shadow-md w-full max-w-xl mx-auto">
             <Text className="text-2xl font-bold text-center mb-6">Editar Evento</Text>
 
             <Text className="text-base font-medium mb-1">Nombre del Evento</Text>
@@ -156,6 +186,43 @@ const EditarEvento = ({ evento, onClose }) => {
                 <TouchableOpacity className="bg-blue-100 py-2 px-4 rounded-lg mb-4" onPress={() => setShowDatePicker(true)}>
                     <Text className="text-blue-800 text-center">Selecciona fecha</Text>
                 </TouchableOpacity>
+            )}
+
+            <Text style={styles.text}>Fecha y hora de inicio</Text>
+
+            {Platform.OS === 'android' ? (
+                <>
+
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonText}>Hora de inicio</Text>
+                    </TouchableOpacity>
+                    <DateTimePicker
+                        value={startTime}
+                        mode="time"
+                        display="default"
+                        is24Hour={true}
+                        locale="es-ES"
+                        onChange={onChangeStartTime}
+                    />
+                </>
+            ) : (
+                <View className="w-full max-w-md mx-auto mt-6 p-4 bg-white rounded-xl shadow-md space-y-4">
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Hora de Inicio:</label>
+                        <input
+                            type="time"
+                            value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                            onChange={(e) => {
+                                const [hours, minutes] = e.target.value.split(':');
+                                const newTime = new Date(startTime);
+                                newTime.setHours(hours, minutes);
+                                setStartTime(newTime);
+                            }}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                        />
+                    </div>
+                </View>
+
             )}
 
             {Platform.OS === 'web' ? (
@@ -241,7 +308,7 @@ const EditarEvento = ({ evento, onClose }) => {
                     <Text className="text-white font-medium">Guardar</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
 
     );
 

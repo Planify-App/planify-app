@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import {View, Text, TextInput, TouchableOpacity, Switch, StyleSheet, Platform, ToastAndroid} from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Switch,
+    StyleSheet,
+    Platform,
+    ToastAndroid,
+    Alert,
+    ScrollView
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Globals from "./globals";
@@ -17,6 +28,9 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [cantidad, setCantidad] = useState('');
     const [userId, setUserId] = useState(null);
+    const [startTime, setStartTime] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date());
+
 
     useEffect(() => {
         const getUserSession = async () => {
@@ -60,6 +74,28 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
         if (idQuedada) fetchUsuarios();
     }, [idQuedada]);
 
+    const onChangeStartTime = (event, selectedTime) => {
+        if (selectedTime) {
+            const now = new Date();
+            const selected = new Date(startDate);
+            selected.setHours(selectedTime.getHours(), selectedTime.getMinutes(), 0, 0);
+
+            const nowCompare = new Date();
+            nowCompare.setSeconds(0, 0); // ✅ CAMBIO: más preciso
+
+            if (selected < nowCompare) {
+                Alert.alert("Hora inválida", "La hora de inicio no puede ser anterior a la hora actual.");
+                return;
+            }
+
+            setStartTime(selectedTime);
+            updateStartText(startDate, selectedTime);
+            if (Platform.OS === 'android') {
+                setShowStartTimePicker(false);
+            }
+        }
+    };
+
     useEffect(() => {
         if (tipoPago === 'Equitativo' && cantidad && users.length > 0) {
             const cantidadFloat = parseFloat(cantidad);
@@ -101,7 +137,7 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
             id_quedada: idQuedada,
             nombre_evento: nombreEvento,
             descripcion_evento: descripcion,
-            fecha_hora_evento: formatDate(fecha).toString(),
+            fecha_hora_evento: formatDateTime(fecha, startTime),
             lugar_evento: lugar,
         };
 
@@ -148,7 +184,7 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
 
 
     return (
-        <View className="p-6 bg-white rounded-2xl shadow-md w-full max-w-xl mx-auto">
+        <ScrollView className="p-6 bg-white rounded-2xl shadow-md w-full max-w-xl mx-auto">
             <Text className="text-2xl font-bold text-center mb-6">Crear Evento</Text>
 
             <Text className="text-base font-medium mb-1">Nombre del Evento</Text>
@@ -179,6 +215,43 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
                     onChange={onChangeFecha}
                 />
             ) : null}
+
+            <Text style={styles.text}>Fecha y hora de inicio</Text>
+
+            {Platform.OS === 'android' ? (
+                <>
+
+                    <TouchableOpacity style={styles.button}>
+                        <Text style={styles.buttonText}>Hora de inicio</Text>
+                    </TouchableOpacity>
+                        <DateTimePicker
+                            value={startTime}
+                            mode="time"
+                            display="default"
+                            is24Hour={true}
+                            locale="es-ES"
+                            onChange={onChangeStartTime}
+                        />
+                </>
+            ) : (
+                <View className="w-full max-w-md mx-auto mt-6 p-4 bg-white rounded-xl shadow-md space-y-4">
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Hora de Inicio:</label>
+                        <input
+                            type="time"
+                            value={startTime.toLocaleTimeString('it-IT').slice(0, 5)}
+                            onChange={(e) => {
+                                const [hours, minutes] = e.target.value.split(':');
+                                const newTime = new Date(startTime);
+                                newTime.setHours(hours, minutes);
+                                setStartTime(newTime);
+                            }}
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#297169]"
+                        />
+                    </div>
+                </View>
+
+            )}
 
             {Platform.OS !== 'web' && (
                 <View className="mb-4">
@@ -260,7 +333,7 @@ const CrearEvento = ({ idQuedada, onClose  }) => {
                     <Text className="text-white font-medium">Guardar</Text>
                 </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 

@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, ActivityIndicator, Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Globals from './globals';
-import { useRouter, useSearchParams } from 'expo-router';
+import {useRoute} from "@react-navigation/native";
 
 export default function Invite() {
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
-    const router = useRouter();
-    const { code } = useSearchParams();
+    const route = useRoute();
+    const { code } = route.params || {};
 
     useEffect(() => {
         (async () => {
             try {
-                // 1) Obtener userId de sesión
                 let session;
                 if (Platform.OS === 'web') {
                     session = localStorage.getItem('userSession');

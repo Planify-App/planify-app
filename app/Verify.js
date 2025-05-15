@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Globals from './globals';
-import { useRouter, useSearchParams } from 'expo-router';
+import {useRoute} from "@react-navigation/native";
 
 export default function Verify() {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const router = useRouter();
-    const { token } = useSearchParams();
+    const route = useRoute();
+    const { token } = route.params || {};
 
     const handleVerify = async () => {
         setLoading(true);

@@ -64,6 +64,7 @@ export default function Quedada() {
 
     useEffect(() => {
         if (eventoSeleccionado) {
+            console.log(eventoSeleccionado.pagos);
             setVisibleEvent(false);
         }
     }, [eventoSeleccionado]);
@@ -79,7 +80,7 @@ export default function Quedada() {
                 const response = await fetch(`http://${Globals.ip}:3080/api/getHangoutEvents/${id}`);
                 const data = await response.json();
                 setEventos(data || []);
-                console.log(data)
+                //console.log(data)
             } catch (err) {
                 console.error('Error al cargar eventos:', err);
             }
@@ -218,7 +219,7 @@ export default function Quedada() {
 
     useEffect(() => {
         if (!users?.length) {
-            console.log("users aún vacío:", users);
+            //console.log("users aún vacío:", users);
             return;
         }
 
@@ -528,9 +529,9 @@ export default function Quedada() {
                         {isMultiDay ? (
                             <View className="space-y-1">
                                 <Text className="text-sm text-gray-500">🗓 La quedada dura más de un día</Text>
-                                <Text>📍 Empieza: {formatDateTime(startDate, startTime)}</Text>
-                                <Text>⏱ Dura: {getDiastotales()} días</Text>
-                                <Text>🏁 Termina: {formatDateTime(endDate, endTime)}</Text>
+                                <Text>📍 Empieza: <Text style={{ fontWeight: 'bold' }}>{formatDateTime(startDate, startTime)}</Text></Text>
+                                <Text>⏱ Dura: <Text style={{ fontWeight: 'bold' }}>{getDiastotales()} días</Text></Text>
+                                <Text>🏁 Termina: <Text style={{ fontWeight: 'bold' }}>{formatDateTime(endDate, endTime)}</Text></Text>
                             </View>
                         ) : (
                             <Text className="text-sm text-gray-500">🗓 Solo dura un día: {formatDateTime(startDate, startTime)}</Text>
@@ -566,6 +567,7 @@ export default function Quedada() {
                                         >
                                             <Text className="font-bold text-lg">{evento.nombre_evento}</Text>
                                             <Text>{evento.lugar_evento}</Text>
+                                            <Text>{evento.fecha_hora_evento}</Text>
                                         </TouchableOpacity>
                                     ))
                                 ) : (
@@ -577,9 +579,24 @@ export default function Quedada() {
                         {eventoSeleccionado && (
                             <View className="bg-gray-100 p-4 rounded-xl mt-4 space-y-2">
                                 <Text className="text-xl font-bold">{eventoSeleccionado.nombre_evento}</Text>
-                                <Text>📍 Lugar: {eventoSeleccionado.lugar_evento}</Text>
-                                <Text>📅 Fecha: {eventoSeleccionado.fecha_hora_evento}</Text>
-                                <Text>📋 {eventoSeleccionado.descripcion_evento}</Text>
+                                <Text>📍 Lugar: <Text className="font-bold">{eventoSeleccionado.lugar_evento}</Text></Text>
+                                <Text>📅 Fecha: <Text className="font-bold">{eventoSeleccionado.fecha_hora_evento}</Text></Text>
+                                <Text>📋 <Text className="font-bold">{eventoSeleccionado.descripcion_evento}</Text></Text>
+
+                                <View className="mt-4">
+                                    <Text className="font-bold text-base mb-2">💸 Pagos por usuario:</Text>
+                                    <Text>Total a pagar -> <Text className="font-bold">{eventoSeleccionado.precio_total}</Text></Text>
+
+                                    {eventoSeleccionado.pagos && eventoSeleccionado.pagos.length > 0 ? (
+                                        eventoSeleccionado.pagos.map((pago, index) => (
+                                            <Text key={index}>
+                                                Usuario: <Text className="font-bold">{pago.nombre_usuario}</Text> Cantidad: <Text className="font-bold">{pago.cantidad} €</Text>
+                                            </Text>
+                                        ))
+                                    ) : (
+                                        <Text className="italic text-gray-600">No hay pagos asignados.</Text>
+                                    )}
+                                </View>
 
                                 <TouchableOpacity onPress={() => setEventoSeleccionado(null)} className="bg-blue-500 p-3 rounded-lg">
                                     <Text className="text-white text-center">Cerrar detalle</Text>
@@ -599,6 +616,7 @@ export default function Quedada() {
                         )}
 
                     </View>
+
 
                     {/* Modal edición */}
                     <Modal visible={showEditarModal} animationType="slide" onRequestClose={() => setShowEditarModal(false)}>
